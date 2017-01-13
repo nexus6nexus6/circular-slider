@@ -1,1 +1,6 @@
 gulpfile.js
+.env
+.eslintrc
+node_modules
+npm-debug.*
+app/**/*.js
