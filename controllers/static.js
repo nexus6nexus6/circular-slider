@@ -13,7 +13,7 @@ router.get([
 })
 
 // assets
-router.use(express.static(path.resolve('app/js/')));
-router.use(express.static(path.resolve('app/css/')));
+router.use('/js',express.static(path.resolve('app/js')));
+router.use('/css', express.static(path.resolve('app/css')));
 
 module.exports = router;
