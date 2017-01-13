@@ -29,19 +29,26 @@ var circularSlider = (function() {
     }
 
     // overwrites default values and env vars, constants
-    config = function(options) {
-        options = extendObj(options,{
-            container: getById('slider'),
-            color: 'red',
-            max: 1,
-            min: 0,
-            step: 0.01,
-            radius: '200px'
-        })
+    config = function(_options) {
+        if (_options) options = extendObj(options,_options)
     }
 
     // renders DOM elements
-    render = function() {}
+    render = function() {
+
+        // append app elements to options.container child > .slider
+        // get .slider
+        var slider = childByClass(options.container, '.slider')
+
+        // create, append // <div class="dragger"></div>
+        var dragger = createEl('div', 'dragger')
+        slider.appendChild(dragger)
+
+        // create, append // <div class="scale"></div>
+        var scale = createEl('div', 'scale')
+        slider.appendChild(scale)
+
+    }
 
     // controls DOM elements
     control = function() {}
@@ -53,17 +60,48 @@ var circularSlider = (function() {
     //
     var getById,
         getByClass,
-        extendObj
+        childByClass,
+        extendObj,
+        createEl
 
-    // private: get DOM element by id
+    // get DOM element by id
     getById = function(_id) {
+
+        // sanatize args
+        _id = _id.replace('#','');
+
+        // returns
         return document.getElementById(_id)
+
     }
 
     // get DOM element by class name
     getByClass = function(_class) {
+
+        // sanatize args
+        _class = _class.replace('.','');
+
+        // locals
         var elems = document.getElementsByTagName('*'),
             i = 0
+
+        // loop through childs and return
+        for (i in elems) {
+            if ((' '+ elems[i].className +' ').indexOf(' '+ _class +' ') > -1) return elems[i]
+        }
+    }
+
+    // get a child element by class names
+    childByClass = function(_root, _class) {
+
+        // sanatize args
+        _class = _class.replace('.','');
+
+        // locals
+        var elems = _root.getElementsByTagName('*'),
+            i = 0
+
+        // loop through childs and return
         for (i in elems) {
             if ((' '+ elems[i].className +' ').indexOf(' '+ _class +' ') > -1) return elems[i]
         }
@@ -77,16 +115,32 @@ var circularSlider = (function() {
         return _orig;
     }
 
+    // create DOM element
+    createEl = function(_tag, _class) {
+        if (_tag && _class) {
+            var el = document.createElement(_tag)
+            el.setAttribute('class',_class)
+            return el
+        }
+    }
+
+
 
     // **
     // API - public interface: methods and vars
     return {
         init: function(options) {
+            // set default values
+            defaults()
+            // overwrite defaults
             config(options)
+            // render the DOM elements
             render()
+            // control the app
             control()
         }
     }
+
 
 })()
 
