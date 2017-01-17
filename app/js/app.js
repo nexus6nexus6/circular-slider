@@ -6,25 +6,33 @@ var circularSlider = (function() {
 
     // ** Core methods and props
 
-    // private vars
-    var options
+    // private props
+    var options,
+        sliderValue
 
     // private methods definition list
     var config,
         render,
         control,
-        defaults
+        defaults,
+        update
 
     // configures default values and env vars, constants
     defaults = function() {
+
+        // set default options
         options = {
-            container: getById('slider'),
+            id: 'slider',
             color: 'red',
             max: 1,
             min: 0,
             step: 0.01,
             radius: '200px'
         }
+
+        // set default slider value
+        sliderValue = 0;
+
     }
 
     // overwrites default values and env vars, constants
@@ -35,26 +43,59 @@ var circularSlider = (function() {
     // renders DOM elements
     render = function() {
 
+        // ** render slider elements
         // append app elements to options.container child > .slider
-        // get .slider
-        var slider = childByClass(options.container, '.slider')
 
-        // create, append // <div class="dragger"></div>
+        // get container elements
+        var sliders = getByClass('.sliders')
+        var labels = getByClass('.labels')
+
+
+        // create slider DOM elements
+        var container = createEl('div', options.id)
+        var slider = createEl('div', 'slider')
         var dragger = createEl('div', 'dragger')
-        slider.appendChild(dragger)
-
-        // create, append // <div class="scale"></div>
         var scale = createEl('div', 'scale')
-        slider.appendChild(scale)
+        var label = createEl('div', options.id)
 
+        // glue slider DOM elements to container el
+        slider.appendChild(scale)
+        slider.appendChild(dragger)
+        container.appendChild(slider)
+
+        // append two main elements to DOM parents
+        sliders.appendChild(container)
+        labels.appendChild(label)
+
+    }
+
+    // updates DOM elements
+    update = function() {
+        // set label inner text to slider value
+        updateLabel()
     }
 
     // controls DOM elements
     control = function() {}
 
 
-    // ** Facade - abstracts vanilla JS
 
+
+
+    // ** Shared lib - shared by core methods
+    var updateLabel
+
+    // update slider label value
+    updateLabel = function() {
+        var label = getByClass(options.id);
+        label.innerText = 'slider: ' + sliderValue;
+    }
+
+
+
+
+
+    // ** Facade - abstracts vanilla JS
     // methods deifnition list
     var getById,
         getByClass,
@@ -128,14 +169,23 @@ var circularSlider = (function() {
     // API - public interface: methods and vars
     return {
         init: function(options) {
+
             // set default values
             defaults()
+
             // overwrite defaults
             config(options)
+
+            // all good, continue..
             // render the DOM elements
             render()
+
+            // update
+            update()
+
             // control the app
             control()
+
         }
     }
 
@@ -144,7 +194,7 @@ var circularSlider = (function() {
 
 
 circularSlider.init({
-    container: document.getElementById('slider-1'),
+    id: 'slider-1',
     color: 'rgba(255,0,0,0.1)',
     max: 1,
     min: 0,
