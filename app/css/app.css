@@ -1,4 +1,7 @@
 /* css resets */
+* {
+  user-select: none;
+}
 html,body{
     padding:0;
     margin: 0;

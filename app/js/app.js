@@ -8,6 +8,7 @@ var circularSlider = (function() {
 
     // private props
     var options,
+        sliderEl,
         sliderValue
 
     // private methods definition list
@@ -15,7 +16,8 @@ var circularSlider = (function() {
         render,
         control,
         defaults,
-        update
+        update,
+        events
 
     // configures default values and env vars, constants
     defaults = function() {
@@ -32,6 +34,15 @@ var circularSlider = (function() {
 
         // set default slider value
         sliderValue = 0;
+
+        // setup default sliderEl object structure
+        sliderEl = {
+            container: null,
+            dragger: null,
+            scale: null,
+            slider: null,
+            label: null
+        };
 
     }
 
@@ -52,20 +63,24 @@ var circularSlider = (function() {
 
 
         // create slider DOM elements
-        var container = createEl('div', options.id)
-        var slider = createEl('div', 'slider')
-        var dragger = createEl('div', 'dragger')
-        var scale = createEl('div', 'scale')
-        var label = createEl('div', options.id)
+        // attach them to shared sliderEl object for future reference
+        sliderEl = {
+            container: createEl('div', options.id),
+            dragger: createEl('div', 'dragger'),
+            scale: createEl('div', 'scale'),
+            slider: createEl('div', 'slider'),
+            label: createEl('div', options.id)
+        }
 
         // glue slider DOM elements to container el
-        slider.appendChild(scale)
-        slider.appendChild(dragger)
-        container.appendChild(slider)
+        sliderEl.slider.appendChild(sliderEl.scale)
+        sliderEl.slider.appendChild(sliderEl.dragger)
+        sliderEl.container.appendChild(sliderEl.slider)
 
         // append two main elements to DOM parents
-        sliders.appendChild(container)
-        labels.appendChild(label)
+        sliders.appendChild(sliderEl.container)
+        labels.appendChild(sliderEl.label)
+
 
     }
 
@@ -73,6 +88,18 @@ var circularSlider = (function() {
     update = function() {
         // set label inner text to slider value
         updateLabel()
+    }
+
+    // listens to DOM and app events
+    events = function() {
+        // listen to dragger DOM events
+        var dragger = sliderEl.dragger
+        on(dragger, 'click', logClickEvent)
+
+        function logClickEvent(e) {
+            console.log(e);
+        }
+
     }
 
     // controls DOM elements
@@ -87,8 +114,7 @@ var circularSlider = (function() {
 
     // update slider label value
     updateLabel = function() {
-        var label = getByClass(options.id);
-        label.innerText = 'slider: ' + sliderValue;
+        sliderEl.label.innerText = 'slider: ' + sliderValue;
     }
 
 
@@ -101,7 +127,19 @@ var circularSlider = (function() {
         getByClass,
         childByClass,
         extendObj,
-        createEl
+        createEl,
+        on,
+        off
+
+    // listens to DOM event
+    on = function(el, type, callback) {
+        el.addEventListener(type, callback, false);
+    }
+
+    // removes DOM el listener
+    off = function(el, type, callback) {
+        el.removeEventListener(type, callback, false);
+    }
 
     // get DOM element by id
     getById = function(_id) {
@@ -176,17 +214,20 @@ var circularSlider = (function() {
             // overwrite defaults
             config(options)
 
-            // all good, continue..
-            // render the DOM elements
+            // render slider elements
             render()
 
-            // update
+            // update UI with default values
             update()
+
+            // listen to DOM and app events
+            events()
 
             // control the app
             control()
 
         }
+        // TODO  destroy()
     }
 
 
