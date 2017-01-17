@@ -4,13 +4,12 @@
 // App: Circular silder module
 var circularSlider = (function() {
 
-    // **
-    // Core methods and vars
+    // ** Core methods and props
 
     // private vars
     var options
 
-    // private methods
+    // private methods definition list
     var config,
         render,
         control,
@@ -54,10 +53,9 @@ var circularSlider = (function() {
     control = function() {}
 
 
-    // **
-    // Helper facade
+    // ** Facade - abstracts vanilla JS
 
-    //
+    // methods deifnition list
     var getById,
         getByClass,
         childByClass,
