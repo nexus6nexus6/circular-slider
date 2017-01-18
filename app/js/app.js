@@ -4,7 +4,7 @@
 // App: Circular silder module
 var circularSlider = (function() {
 
-    // ** Core methods and props
+    // ** CORE METHODS and PROPS
 
     // private props
     var options,
@@ -93,7 +93,12 @@ var circularSlider = (function() {
     // handle events
     events = function() {
 
-        // listen mouse position while dragging
+        // prevent iPad document move
+        document.ontouchmove = function(e) {
+            e.preventDefault();
+        }
+
+        // listen to mouse/touch position while dragging
         trackDragger()
 
     }
@@ -102,7 +107,12 @@ var circularSlider = (function() {
     control = function() {}
 
 
-    // ** Business Logic
+
+
+
+
+
+    // ** BUSINESS LOGIC
     var trackDragger
 
     // listen to mouse position while dragging
@@ -118,12 +128,12 @@ var circularSlider = (function() {
         on(slider, 'mousedown', startTracking, false)
         on(slider, 'touchstart', startTracking, false)
 
-        on(container, 'mouseup', stopTracking, false)
-        on(container, 'mouseleave', stopTracking, false)
+        on(document, 'mouseup', stopTracking, false)
+        // on(container, 'mouseleave', stopTracking, false)
         on(container, 'touchend', stopTracking, false)
 
         on(container, 'mousemove', trackPosition, false)
-        on(container, 'touchmove', trackPosition, false) // BUG .. doesnt track the touch move
+        on(container, 'touchmove', trackPosition, false)
 
         function startTracking(e) {
             track = true;
@@ -138,38 +148,45 @@ var circularSlider = (function() {
         }
         function updateDragger(x) {
             // pass the value to global param
-            sliderValue = x;
+            sliderValue = Math.round(x);
             // update dragger position
-            dragger.style.left = x+'px';
+            dragger.style.left = sliderValue+'px';
             // update dragger label
-            updateLabel('x='+x);
+            updateLabel('pos.x='+sliderValue);
         }
 
     }
 
 
 
-    // ** Shared lib - shared by core methods
+
+
+    // ** SHARED LIB - shared by core methods
     var updateLabel,
         getTouchOffsetX,
         getXFromEvent
 
     // update slider label value
     updateLabel = function(text) {
-        sliderEl.label.innerText = text || 'x=' + sliderValue;
+        sliderEl.label.innerText = text || 'pos.x=' + sliderValue;
     }
 
     // sum up all offsets up the DOM tree for touch event
     getTouchOffsetX = function(e) {
         var offsetX = 0;
-        if (e && e.path && e.path.length > 0) {
-            for (var i = 0; i < e.path.length; i++) {
-                if (e.path[i].offsetLeft) {
-                    offsetX += e.path[i].offsetLeft
+
+        if (e && e.target) {
+            var el = e.target;
+            while (el.parentNode) {
+                el = el.parentNode;
+                if (el.offsetLeft) {
+                    offsetX += el.offsetLeft
                 }
             }
         }
+
         return offsetX
+
     }
 
     // get normalized x from mouse or touch event
@@ -190,12 +207,17 @@ var circularSlider = (function() {
 
         // normalize: min, max values
         if (x < 0) x = 0;
-        if (x > sliderEl.slider.offsetWidth) x = sliderEl.slider.offsetWidth;
+        if (x > sliderEl.slider.offsetWidth - sliderEl.dragger.offsetWidth) x = sliderEl.slider.offsetWidth - sliderEl.dragger.offsetWidth;
 
         return x
     }
 
-    // ** Facade - abstracts DOM related methods for vanilla JS
+
+
+
+
+
+    // ** FACADE - abstracts DOM related methods for vanilla JS
     // methods deifnition list
     var getById,
         getByClass,
@@ -203,7 +225,8 @@ var circularSlider = (function() {
         extendObj,
         createEl,
         on,
-        off
+        off,
+        debug
 
     // listens to DOM event
     on = function(el, type, callback) {
@@ -275,10 +298,20 @@ var circularSlider = (function() {
         }
     }
 
+    // alternative debug console
+    debug = function(msg) {
+        var debug = getByClass('.debug')
+        if (!debug) {
+            debug = createEl('div','debug')
+            document.body.appendChild(debug)
+        }
+        debug.innerHTML = '<pre>'+ msg +'</pre>'
+    }
 
 
-    // **
-    // API - public interface: methods and vars
+
+
+    // ** API - public interface
     return {
         init: function(options) {
 
