@@ -90,15 +90,11 @@ var circularSlider = (function() {
         updateLabel()
     }
 
-    // listens to DOM and app events
+    // handle events
     events = function() {
-        // listen to dragger DOM events
-        var dragger = sliderEl.dragger
-        on(dragger, 'click', logClickEvent)
 
-        function logClickEvent(e) {
-            console.log(e);
-        }
+        // listen mouse position while dragging
+        trackDragger()
 
     }
 
@@ -106,22 +102,100 @@ var circularSlider = (function() {
     control = function() {}
 
 
+    // ** Business Logic
+    var trackDragger
 
+    // listen to mouse position while dragging
+    trackDragger = function() {
 
+        var dragger = sliderEl.dragger,
+            slider = sliderEl.slider,
+            container = sliderEl.container,
+            label = sliderEl.label,
+            track = false
 
-    // ** Shared lib - shared by core methods
-    var updateLabel
+        // register events
+        on(slider, 'mousedown', startTracking, false)
+        on(slider, 'touchstart', startTracking, false)
 
-    // update slider label value
-    updateLabel = function() {
-        sliderEl.label.innerText = 'slider: ' + sliderValue;
+        on(container, 'mouseup', stopTracking, false)
+        on(container, 'mouseleave', stopTracking, false)
+        on(container, 'touchend', stopTracking, false)
+
+        on(container, 'mousemove', trackPosition, false)
+        on(container, 'touchmove', trackPosition, false) // BUG .. doesnt track the touch move
+
+        function startTracking(e) {
+            track = true;
+            updateDragger(getXFromEvent(e))
+        }
+        function stopTracking(e) {
+            track = false;
+        }
+        function trackPosition(e) {
+            if (!track) return
+            updateDragger(getXFromEvent(e))
+        }
+        function updateDragger(x) {
+            // pass the value to global param
+            sliderValue = x;
+            // update dragger position
+            dragger.style.left = x+'px';
+            // update dragger label
+            updateLabel('x='+x);
+        }
+
     }
 
 
 
+    // ** Shared lib - shared by core methods
+    var updateLabel,
+        getTouchOffsetX,
+        getXFromEvent
 
+    // update slider label value
+    updateLabel = function(text) {
+        sliderEl.label.innerText = text || 'x=' + sliderValue;
+    }
 
-    // ** Facade - abstracts vanilla JS
+    // sum up all offsets up the DOM tree for touch event
+    getTouchOffsetX = function(e) {
+        var offsetX = 0;
+        if (e && e.path && e.path.length > 0) {
+            for (var i = 0; i < e.path.length; i++) {
+                if (e.path[i].offsetLeft) {
+                    offsetX += e.path[i].offsetLeft
+                }
+            }
+        }
+        return offsetX
+    }
+
+    // get normalized x from mouse or touch event
+    getXFromEvent = function(e) {
+        if (!e || e == null) return null;
+
+        var x = 0;
+
+        // mouse event
+        if (e.offsetX) {
+            x = e.offsetX
+        }
+        // touch event
+        else if (e.touches && e.touches.length > 0) {
+            var offsetX = getTouchOffsetX(e)
+            x = e.touches[0].pageX - offsetX
+        }
+
+        // normalize: min, max values
+        if (x < 0) x = 0;
+        if (x > sliderEl.slider.offsetWidth) x = sliderEl.slider.offsetWidth;
+
+        return x
+    }
+
+    // ** Facade - abstracts DOM related methods for vanilla JS
     // methods deifnition list
     var getById,
         getByClass,
