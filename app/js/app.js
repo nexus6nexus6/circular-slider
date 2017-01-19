@@ -29,7 +29,11 @@ var circularSlider = (function() {
             max: 1,
             min: 0,
             step: 0.01,
-            radius: '200px'
+            radius: '100px',
+            offset: {
+                x: '0px',
+                y: '0px'
+            }
         }
 
         // set default slider value
@@ -38,8 +42,8 @@ var circularSlider = (function() {
         // setup default sliderEl object structure
         sliderEl = {
             container: null,
+            origin: null,
             dragger: null,
-            scale: null,
             slider: null,
             label: null
         };
@@ -61,26 +65,49 @@ var circularSlider = (function() {
         var sliders = getByClass('.sliders')
         var labels = getByClass('.labels')
 
-
-        // create slider DOM elements
+        // ** create slider DOM elements
         // attach them to shared sliderEl object for future reference
         sliderEl = {
             container: createEl('div', options.id),
-            dragger: createEl('div', 'dragger'),
-            scale: createEl('div', 'scale'),
+            listener: createEl('div', 'listener'),
+            origin: createEl('div', 'origin'),
             slider: createEl('div', 'slider'),
+            dragger: createEl('div', 'dragger'),
             label: createEl('div', options.id)
         }
 
         // glue slider DOM elements to container el
-        sliderEl.slider.appendChild(sliderEl.scale)
-        sliderEl.slider.appendChild(sliderEl.dragger)
-        sliderEl.container.appendChild(sliderEl.slider)
+        sliderEl.origin.appendChild(sliderEl.slider)
+        sliderEl.listener.appendChild(sliderEl.origin)
+        sliderEl.container.appendChild(sliderEl.dragger)
+        sliderEl.container.appendChild(sliderEl.listener)
 
         // append two main elements to DOM parents
         sliders.appendChild(sliderEl.container)
         labels.appendChild(sliderEl.label)
 
+
+        // ** position the elements
+        // setup some data first
+        var r = parseInt(options.radius, 10),
+            cx = parseInt(options.offset.x, 10),
+            cy = parseInt(options.offset.y, 10)
+
+        // position the origin
+        sliderEl.origin.style.top = (r+cx) + 'px';
+        sliderEl.origin.style.left = (r+cy) + 'px';
+
+        // position the slider (circle)
+        sliderEl.slider.style.top = -r + 'px';
+        sliderEl.slider.style.left = -r + 'px';
+
+        // add radius to slider
+        sliderEl.slider.style.width = r * 2 + 'px';
+        sliderEl.slider.style.height = r * 2 + 'px';
+
+        // position the dragger
+        sliderEl.dragger.style.top = (0+cx) + 'px';
+        sliderEl.dragger.style.left = (r+cy) + 'px';
 
     }
 
@@ -119,40 +146,58 @@ var circularSlider = (function() {
     trackDragger = function() {
 
         var dragger = sliderEl.dragger,
-            slider = sliderEl.slider,
             container = sliderEl.container,
+            listener = sliderEl.listener,
+            origin = sliderEl.origin,
+            slider = sliderEl.slider,
             label = sliderEl.label,
             track = false
 
         // register events
-        on(slider, 'mousedown', startTracking, false)
-        on(slider, 'touchstart', startTracking, false)
+        on(dragger, 'mousedown', startTracking, false)
+        on(dragger, 'touchstart', startTracking, false)
 
         on(document, 'mouseup', stopTracking, false)
-        // on(container, 'mouseleave', stopTracking, false)
-        on(container, 'touchend', stopTracking, false)
+        on(document, 'touchend', stopTracking, false)
 
-        on(container, 'mousemove', trackPosition, false)
-        on(container, 'touchmove', trackPosition, false)
+        on(listener, 'mousemove', trackPosition, false)
+        on(dragger, 'touchmove', trackPosition, false)
 
         function startTracking(e) {
             track = true;
-            updateDragger(getXFromEvent(e))
+            dragger.style.zIndex = '1'
         }
         function stopTracking(e) {
             track = false;
+            dragger.style.zIndex = '2'
         }
         function trackPosition(e) {
             if (!track) return
-            updateDragger(getXFromEvent(e))
+            // console.log(e);
+            updateDragger(getXYFromEvent(e))
         }
-        function updateDragger(x) {
-            // pass the value to global param
-            sliderValue = Math.round(x);
+        function updateDragger(point) {
+            var x = point.x,
+                y = point.y,
+                r = parseInt(options.radius,10), // radius
+                cx = parseInt(options.offset.x,10), // offset x
+                cy = parseInt(options.offset.y,10), // offset y
+                a = Math.atan2(y-cy, x-cx) // angle
+
+            // offset xy
+            var nx = r + r * Math.cos(a)
+            var ny = r + r * Math.sin(a)
+
             // update dragger position
-            dragger.style.left = sliderValue+'px';
+            dragger.style.left = nx + cx + 'px';
+            dragger.style.top = ny + cy + 'px';
+
+            // pass angle as a sliderValue
+            sliderValue = a * (180/Math.PI)
+
             // update dragger label
-            updateLabel('pos.x='+sliderValue);
+            updateLabel('° = '+ sliderValue.toFixed(2));
+
         }
 
     }
@@ -163,53 +208,72 @@ var circularSlider = (function() {
 
     // ** SHARED LIB - shared by core methods
     var updateLabel,
-        getTouchOffsetX,
-        getXFromEvent
+        getTouchOffset,
+        getXYFromEvent
 
     // update slider label value
     updateLabel = function(text) {
-        sliderEl.label.innerText = text || 'pos.x=' + sliderValue;
+        sliderEl.label.innerText = text || '';
     }
 
     // sum up all offsets up the DOM tree for touch event
-    getTouchOffsetX = function(e) {
-        var offsetX = 0;
+    getTouchOffset = function(e) {
+
+        var offset = {
+            x:0,
+            y:0
+        }
 
         if (e && e.target) {
             var el = e.target;
             while (el.parentNode) {
                 el = el.parentNode;
-                if (el.offsetLeft) {
-                    offsetX += el.offsetLeft
+                if (el.offsetLeft && el.offsetTop) {
+                    offset.x += el.offsetLeft
+                    offset.y += el.offsetTop
                 }
             }
         }
 
-        return offsetX
+        return offset
 
     }
 
     // get normalized x from mouse or touch event
-    getXFromEvent = function(e) {
+    getXYFromEvent = function(e) {
         if (!e || e == null) return null;
 
-        var x = 0;
+        var r = parseInt(options.radius, 10)
+
+        var point = {
+            x : 0,
+            y : 0
+        }
+
 
         // mouse event
         if (e.offsetX) {
-            x = e.offsetX
+            point.x = e.offsetX
+            point.y = e.offsetY
         }
         // touch event
         else if (e.touches && e.touches.length > 0) {
-            var offsetX = getTouchOffsetX(e)
-            x = e.touches[0].pageX - offsetX
+            var offset = getTouchOffset(e)
+            point.x = e.touches[0].pageX - offset.x
+            point.y = e.touches[0].pageY - offset.y
         }
 
-        // normalize: min, max values
-        if (x < 0) x = 0;
-        if (x > sliderEl.slider.offsetWidth - sliderEl.dragger.offsetWidth) x = sliderEl.slider.offsetWidth - sliderEl.dragger.offsetWidth;
+        // normalize
+        point.x -= r
+        point.y -= r
 
-        return x
+        // cap min, max values
+        // if (point.x < 0) point.x = 0;
+        // if (point.x > sliderEl.slider.offsetWidth) point.x = sliderEl.slider.offsetWidth;
+        // if (point.y < 0) point.y = 0;
+        // if (point.y > sliderEl.slider.offsetHeight) point.y = sliderEl.slider.offsetHeight;
+
+        return point
     }
 
 
@@ -305,7 +369,7 @@ var circularSlider = (function() {
             debug = createEl('div','debug')
             document.body.appendChild(debug)
         }
-        debug.innerHTML = '<pre>'+ msg +'</pre>'
+        debug.innerHTML = '['+ msg +'] ' + debug.innerHTML;
     }
 
 
@@ -347,5 +411,9 @@ circularSlider.init({
     max: 1,
     min: 0,
     step: 0.01,
-    radius: '200px'
+    radius: '80px',
+    offset: {
+        x: '36px',
+        y: '36px'
+    }
 });

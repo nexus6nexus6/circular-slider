@@ -84,39 +84,54 @@ h1, h2, h3, h4, h5, h6{
     left:10px;
     width: calc(100% - 20px);
     height: calc(100% - 20px);
-    background: rgba(0, 0, 255, 0.1);
 }
 
 
 
 /* slider */
-.UIRoot .slider {
+.UIRoot .listener {
     position: absolute;
-    top:50%;
     left:0;
-    transform: translateY(-50%);
+    top:0;
+    z-index: 1;
     width: 100%;
-    height: 30px;
+    height: 100%;
+    background-color: rgba(0,0,255,0.1);
 }
-.UIRoot .slider .dragger {
+.UIRoot .dragger {
     position: absolute;
     top:0;
     left:0;
+    z-index: 2;
+    transform: translate(-50%,-50%);
     width: 30px;
     height: 30px;
     border-radius: 50%;
     background: blue;
+    cursor: pointer;
+    /*pointer-events: none*/
+}
+.UIRoot .origin {
+    position: absolute;
+    left:0;
+    top:0;
+    width: 1px;
+    height: 1px;
+    background: black;
     pointer-events: none;
 }
-.UIRoot .slider .scale {
-    display:inline-block;
-    float:left;
-    margin: 0;
-    width: 100%;
-    height: 30px;
-    background: rgba(255,0,0,0.5);
-    cursor: e-resize;
+.UIRoot .slider {
+    position: absolute;
+    top:0;
+    left:0;
+    z-index: 1;
+    border:1px solid rgba(255,0,0,0.2);
+    border-radius: 50%;
+    background: rgba(255,0,0,0.2);
+    pointer-events: none;
 }
+
+
 
 
 /*debug*/
@@ -127,4 +142,5 @@ h1, h2, h3, h4, h5, h6{
     width: 100%;
     height: 100px;
     background: rgba(255, 0, 0, 0.2);
+    overflow: scroll;
 }
