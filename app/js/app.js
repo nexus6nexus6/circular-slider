@@ -19,7 +19,7 @@ var circularSlider = (function() {
         update,
         events
 
-    // configures default values and env vars, constants
+    // configures default values and vars
     defaults = function() {
 
         // set default options
@@ -50,7 +50,7 @@ var circularSlider = (function() {
 
     }
 
-    // overwrites default values and env vars, constants
+    // overwrites default values and vars
     config = function(_options) {
         if (_options) options = extendObj(options,_options)
     }
@@ -72,11 +72,13 @@ var circularSlider = (function() {
             listener: createEl('div', 'listener'),
             origin: createEl('div', 'origin'),
             slider: createEl('div', 'slider'),
+            scale: createCircularScale(),
             dragger: createEl('div', 'dragger'),
             label: createEl('div', options.id)
         }
 
         // glue slider DOM elements to container el
+        sliderEl.origin.appendChild(sliderEl.scale)
         sliderEl.origin.appendChild(sliderEl.slider)
         sliderEl.listener.appendChild(sliderEl.origin)
         sliderEl.container.appendChild(sliderEl.dragger)
@@ -86,6 +88,8 @@ var circularSlider = (function() {
         sliders.appendChild(sliderEl.container)
         labels.appendChild(sliderEl.label)
 
+        // append class namespace
+        sliderEl.container.className += ' circular-slider'
 
         // ** position the elements
         // setup some data first
@@ -96,6 +100,10 @@ var circularSlider = (function() {
         // position the origin
         sliderEl.origin.style.top = (r+cx) + 'px';
         sliderEl.origin.style.left = (r+cy) + 'px';
+
+        // position the scale
+        sliderEl.scale.style.top = -r + 'px';
+        sliderEl.scale.style.left = -r + 'px';
 
         // position the slider (circle)
         sliderEl.slider.style.top = -r + 'px';
@@ -109,12 +117,35 @@ var circularSlider = (function() {
         sliderEl.dragger.style.top = (0+cx) + 'px';
         sliderEl.dragger.style.left = (r+cy) + 'px';
 
+        // add radius to circular scale and its masking/cliping nodes
+        var scale = {
+            scale : sliderEl.scale,
+            clip1 : getByClass('.clip1'),
+            clip2 : getByClass('.clip2'),
+            slice1 : getByClass('.slice1'),
+            slice2 : getByClass('.slice2')
+        }
+
+        scale.scale.style.width = r * 2 + 'px';
+        scale.scale.style.height = r * 2 + 'px';
+
+        scale.clip1.style.cssText = 'width:'+ r*2 + 'px; height:'+ r*2 + 'px; clip:rect(0px, '+ r*2 +'px, '+ r*2 +'px, '+ r +'px);';
+        scale.clip2.style.cssText = 'width:'+ r*2 + 'px; height:'+ r*2 + 'px; clip:rect(0, '+ r + 'px, '+ r*2 +'px, 0px);';
+
+        scale.slice1.style.cssText = 'width:'+ r*2 + 'px; height:'+ r*2 + 'px; clip:rect(0px, '+ r +'px, '+ r*2 +'px, 0px); zoom:1;';
+        scale.slice2.style.cssText = 'width:'+ r*2 + 'px; height:'+ r*2 + 'px; clip:rect(0px, '+ r*2 +'px, '+ r*2 +'px, '+ r +'px); zoom:1;';
+
     }
 
     // updates DOM elements
     update = function() {
+
+        // set scale angle value
+        updateScale()
+
         // set label inner text to slider value
         updateLabel()
+
     }
 
     // handle events
@@ -125,25 +156,13 @@ var circularSlider = (function() {
             e.preventDefault();
         }
 
-        // listen to mouse/touch position while dragging
-        trackDragger()
+        // controll the app
+        control()
 
     }
 
     // controls DOM elements
-    control = function() {}
-
-
-
-
-
-
-
-    // ** BUSINESS LOGIC
-    var trackDragger
-
-    // listen to mouse position while dragging
-    trackDragger = function() {
+    control = function() {
 
         var dragger = sliderEl.dragger,
             container = sliderEl.container,
@@ -203,7 +222,7 @@ var circularSlider = (function() {
             sliderValue = a
 
             // update dragger label
-            updateLabel(sliderValue.toFixed(2)+'°')
+            update()
 
         }
 
@@ -215,12 +234,54 @@ var circularSlider = (function() {
 
     // ** SHARED LIB - shared by core methods
     var updateLabel,
+        updateScale,
         getTouchOffset,
-        getXYFromEvent
+        getXYFromEvent,
+        createCircularScale,
+        rotateSlice
+
+    updateScale = function() {
+
+        // update slice1
+        var slice1 = getByClass('.slice1')
+        slice1.style.transform = rotateSlice(sliderValue, 360, 'slice1')
+
+        // update scale.slice2
+        var slice2 = getByClass('.slice2')
+        slice2.style.transform = rotateSlice(sliderValue, 360, 'slice2')
+
+    }
+
+    // rotate circular scale's slices
+    rotateSlice = function(x, outOf, target) {
+
+        var firstHalfAngle = 180;
+        var secondHalfAngle = 0;
+
+        // caluclate the angle
+        var drawAngle = x / outOf * 360;
+
+        // calculate the angle to be displayed if each half
+        if (drawAngle <= 180) {
+            firstHalfAngle = drawAngle;
+        }
+        else {
+            secondHalfAngle = drawAngle - 180;
+        }
+
+        if (target == 'slice1') {
+            return degToCSS(firstHalfAngle)
+        }
+        else {
+            return degToCSS(secondHalfAngle)
+
+        }
+
+    }
 
     // update slider label value
-    updateLabel = function(text) {
-        sliderEl.label.innerText = text || '';
+    updateLabel = function() {
+        sliderEl.label.innerText = sliderValue.toFixed(2)+'°' || '';
     }
 
     // sum up all offsets up the DOM tree for touch event
@@ -283,6 +344,28 @@ var circularSlider = (function() {
         return point
     }
 
+    // create scale: circular HTML element
+    createCircularScale = function() {
+
+        // nodes
+        var scaleEl = {
+            slice1: createEl('div','slice1'),
+            clip1: createEl('div','clip1'),
+            slice2: createEl('div','slice2'),
+            clip2: createEl('div','clip2'),
+            progress: createEl('div','scale')
+        }
+
+        // glue that nodes
+        scaleEl.clip1.appendChild(scaleEl.slice1)
+        scaleEl.clip2.appendChild(scaleEl.slice2)
+        scaleEl.progress.appendChild(scaleEl.clip1)
+        scaleEl.progress.appendChild(scaleEl.clip2)
+
+        // return HTML node
+        return scaleEl.progress
+
+    }
 
 
 
@@ -295,9 +378,15 @@ var circularSlider = (function() {
         childByClass,
         extendObj,
         createEl,
+        degToCSS,
         on,
         off,
         debug
+
+    // convert degrees to CSS rotation
+    degToCSS = function(degree) {
+        return 'rotate(' + degree + 'deg)'
+    }
 
     // listens to DOM event
     on = function(el, type, callback) {

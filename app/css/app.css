@@ -29,6 +29,9 @@ h1, h2, h3, h4, h5, h6{
     box-sizing: border-box;
 }
 
+/*
+ * host css
+ */
 /* app header*/
 .UIRoot .head {
     display:inline-block;
@@ -87,9 +90,11 @@ h1, h2, h3, h4, h5, h6{
 }
 
 
-
+/*
+ * circular-slider css
+ */
 /* slider */
-.UIRoot .listener {
+.circular-slider .listener {
     position: absolute;
     left:0;
     top:0;
@@ -98,7 +103,7 @@ h1, h2, h3, h4, h5, h6{
     height: 100%;
     background-color: rgba(0,0,255,0.1);
 }
-.UIRoot .dragger {
+.circular-slider .dragger {
     position: absolute;
     top:0;
     left:0;
@@ -111,7 +116,7 @@ h1, h2, h3, h4, h5, h6{
     cursor: pointer;
     /*pointer-events: none*/
 }
-.UIRoot .origin {
+.circular-slider .origin {
     position: absolute;
     left:0;
     top:0;
@@ -120,17 +125,65 @@ h1, h2, h3, h4, h5, h6{
     background: black;
     pointer-events: none;
 }
-.UIRoot .slider {
+.circular-slider .slider {
     position: absolute;
     top:0;
     left:0;
     z-index: 1;
-    border:1px solid rgba(255,0,0,0.2);
+    /*border:1px solid rgba(255,0,0,0.2);*/
     border-radius: 50%;
     background: rgba(255,0,0,0.2);
     pointer-events: none;
 }
 
+
+/* scale */
+.circular-slider .scale {
+    position:absolute;
+    top:0;
+    left:0;
+    opacity:0.5;
+    background-color:#fff;
+    width:100px;
+    height:100px;
+    border-radius:50%;
+}
+.circular-slider .scale .clip1 {
+    position:absolute;
+    top:0;
+    left:0;
+    width:100px;
+    height:100px;
+    clip:rect(0px, 100px, 100px, 50px);
+}
+.circular-slider .scale .slice1 {
+    position:absolute;
+    width:100px;
+    height:100px;
+    clip:rect(0px, 50px, 100px, 0px);
+    border-radius:50%;
+    background-color:#d73a3a;
+    border-color:#d73a3a;
+    transform:rotate(0);
+}
+.circular-slider .scale .clip2 {
+    position:absolute;
+    top:0;
+    left:0;
+    width:100px;
+    height:100px;
+    clip:rect(0, 50px, 100px, 0px);
+}
+.circular-slider .scale .slice2 {
+    position:absolute;
+    width:100px;
+    height:100px;
+    clip:rect(0px, 100px, 100px, 50px);
+    border-radius:50%;
+    background-color:#d73a3a;
+    border-color:#d73a3a;
+    transform:rotate(0);
+}
 
 
 
