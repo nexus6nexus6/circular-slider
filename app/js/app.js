@@ -189,16 +189,21 @@ var circularSlider = (function() {
             var ny = r + r * Math.sin(a)
 
             // update dragger position
-            dragger.style.left = nx + cx + 'px';
-            dragger.style.top = ny + cy + 'px';
+            dragger.style.left = nx + cx + 'px'
+            dragger.style.top = ny + cy + 'px'
 
             // convert angle in radian to degrees + make it full 360 from -180/180
-            a = a * (180/Math.PI) + (a > 0 ? 0 : 360);
+            a = a * (180/Math.PI) + (a > 0 ? 0 : 360)
+
+            // shift 0° by -90°
+            a = (a + 90) % 360
+
+
             // pass angle as a sliderValue
             sliderValue = a
 
             // update dragger label
-            updateLabel(sliderValue.toFixed(2)+'°');
+            updateLabel(sliderValue.toFixed(2)+'°')
 
         }
 
