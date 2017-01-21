@@ -192,11 +192,13 @@ var circularSlider = (function() {
             dragger.style.left = nx + cx + 'px';
             dragger.style.top = ny + cy + 'px';
 
+            // convert angle in radian to degrees + make it full 360 from -180/180
+            a = a * (180/Math.PI) + (a > 0 ? 0 : 360);
             // pass angle as a sliderValue
-            sliderValue = a * (180/Math.PI)
+            sliderValue = a
 
             // update dragger label
-            updateLabel('° = '+ sliderValue.toFixed(2));
+            updateLabel(sliderValue.toFixed(2)+'°');
 
         }
 
@@ -402,7 +404,7 @@ var circularSlider = (function() {
     }
 
 
-})()
+}())
 
 
 circularSlider.init({
