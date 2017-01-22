@@ -156,14 +156,8 @@ var circularSlider = (function() {
             e.preventDefault();
         }
 
-        // controll the app
-        control()
 
-    }
-
-    // controls DOM elements
-    control = function() {
-
+        // shorthand nodes
         var dragger = sliderEl.dragger,
             container = sliderEl.container,
             listener = sliderEl.listener,
@@ -227,6 +221,7 @@ var circularSlider = (function() {
         }
 
     }
+
 
 
 
@@ -489,9 +484,6 @@ var circularSlider = (function() {
 
             // listen to DOM and app events
             events()
-
-            // control the app
-            control()
 
         }
         // TODO  destroy()
