@@ -78,10 +78,10 @@ var circularSlider = (function() {
         }
 
         // glue slider DOM elements to container el
-        sliderEl.origin.appendChild(sliderEl.scale)
         sliderEl.origin.appendChild(sliderEl.slider)
         sliderEl.listener.appendChild(sliderEl.origin)
         sliderEl.container.appendChild(sliderEl.dragger)
+        sliderEl.container.appendChild(sliderEl.scale)
         sliderEl.container.appendChild(sliderEl.listener)
 
         // append two main elements to DOM parents
@@ -101,10 +101,6 @@ var circularSlider = (function() {
         sliderEl.origin.style.top = (r+cx) + 'px';
         sliderEl.origin.style.left = (r+cy) + 'px';
 
-        // position the scale
-        sliderEl.scale.style.top = -r + 'px';
-        sliderEl.scale.style.left = -r + 'px';
-
         // position the slider (circle)
         sliderEl.slider.style.top = -r + 'px';
         sliderEl.slider.style.left = -r + 'px';
@@ -117,23 +113,7 @@ var circularSlider = (function() {
         sliderEl.dragger.style.top = (0+cx) + 'px';
         sliderEl.dragger.style.left = (r+cy) + 'px';
 
-        // add radius to circular scale and its masking/cliping nodes
-        var scale = {
-            scale : sliderEl.scale,
-            clip1 : getByClass('.clip1'),
-            clip2 : getByClass('.clip2'),
-            slice1 : getByClass('.slice1'),
-            slice2 : getByClass('.slice2')
-        }
 
-        scale.scale.style.width = r * 2 + 'px';
-        scale.scale.style.height = r * 2 + 'px';
-
-        scale.clip1.style.cssText = 'width:'+ r*2 + 'px; height:'+ r*2 + 'px; clip:rect(0px, '+ r*2 +'px, '+ r*2 +'px, '+ r +'px);';
-        scale.clip2.style.cssText = 'width:'+ r*2 + 'px; height:'+ r*2 + 'px; clip:rect(0, '+ r + 'px, '+ r*2 +'px, 0px);';
-
-        scale.slice1.style.cssText = 'width:'+ r*2 + 'px; height:'+ r*2 + 'px; clip:rect(0px, '+ r +'px, '+ r*2 +'px, 0px); zoom:1;';
-        scale.slice2.style.cssText = 'width:'+ r*2 + 'px; height:'+ r*2 + 'px; clip:rect(0px, '+ r*2 +'px, '+ r*2 +'px, '+ r +'px); zoom:1;';
 
     }
 
@@ -189,36 +169,7 @@ var circularSlider = (function() {
             // console.log(e);
             updateDragger(getXYFromEvent(e))
         }
-        function updateDragger(point) {
-            var x = point.x,
-                y = point.y,
-                r = parseInt(options.radius,10), // radius
-                cx = parseInt(options.offset.x,10), // offset x
-                cy = parseInt(options.offset.y,10), // offset y
-                a = Math.atan2(y-cy, x-cx) // angle
 
-            // offset xy
-            var nx = r + r * Math.cos(a)
-            var ny = r + r * Math.sin(a)
-
-            // update dragger position
-            dragger.style.left = nx + cx + 'px'
-            dragger.style.top = ny + cy + 'px'
-
-            // convert angle in radian to degrees + make it full 360 from -180/180
-            a = a * (180/Math.PI) + (a > 0 ? 0 : 360)
-
-            // shift 0° by -90°
-            a = (a + 90) % 360
-
-
-            // pass angle as a sliderValue
-            sliderValue = a
-
-            // update dragger label
-            update()
-
-        }
 
     }
 
@@ -230,20 +181,54 @@ var circularSlider = (function() {
     // ** SHARED LIB - shared by core methods
     var updateLabel,
         updateScale,
+        updateDragger,
         getTouchOffset,
         getXYFromEvent,
         createCircularScale,
         rotateSlice
 
+    // update dragger location based on mouse/touch angle against origin
+    updateDragger = function(point) {
+        var x = point.x,
+            y = point.y,
+            r = parseInt(options.radius,10), // radius
+            cx = parseInt(options.offset.x,10), // offset x
+            cy = parseInt(options.offset.y,10), // offset y
+            a = Math.atan2(y-cy, x-cx) // angle
+
+        // offset xy
+        var nx = r + r * Math.cos(a)
+        var ny = r + r * Math.sin(a)
+
+        // update dragger position
+        sliderEl.dragger.style.left = nx + cx + 'px'
+        sliderEl.dragger.style.top = ny + cy + 'px'
+
+        // convert angle in radian to degrees + make it full 360 from -180/180
+        a = a * (180/Math.PI) + (a > 0 ? 0 : 360)
+
+        // shift 0° by -90°
+        a = (a + 90) % 360
+
+
+        // pass angle as a sliderValue
+        sliderValue = a
+
+        // update dragger label
+        update()
+
+    }
+
+    // update circular scale
     updateScale = function() {
 
-        // update slice1
-        var slice1 = getByClass('.slice1')
-        slice1.style.transform = rotateSlice(sliderValue, 360, 'slice1')
+        var r = parseInt(options.radius, 10),
+            cx = parseInt(options.offset.x, 10),
+            cy = parseInt(options.offset.y, 10),
+            arc = childByClass(sliderEl.container,'arc');
 
-        // update scale.slice2
-        var slice2 = getByClass('.slice2')
-        slice2.style.transform = rotateSlice(sliderValue, 360, 'slice2')
+        // get arc svg string: (start xy, start_angle, end_angle)
+        arc.setAttribute('d',getArc((r+cx), (r+cy), 0, sliderValue))
 
     }
 
@@ -342,23 +327,13 @@ var circularSlider = (function() {
     // create scale: circular HTML element
     createCircularScale = function() {
 
-        // nodes
-        var scaleEl = {
-            slice1: createEl('div','slice1'),
-            clip1: createEl('div','clip1'),
-            slice2: createEl('div','slice2'),
-            clip2: createEl('div','clip2'),
-            progress: createEl('div','scale')
-        }
-
-        // glue that nodes
-        scaleEl.clip1.appendChild(scaleEl.slice1)
-        scaleEl.clip2.appendChild(scaleEl.slice2)
-        scaleEl.progress.appendChild(scaleEl.clip1)
-        scaleEl.progress.appendChild(scaleEl.clip2)
-
-        // return HTML node
-        return scaleEl.progress
+        var el = document.createElement('div')
+        el.setAttribute('class','scale_wrap')
+        el.innerHTML += ''+
+                    '<svg xmlns="http://www.w3.org/2000/svg" class="scale">'+
+                        '<path class="arc" />'+
+                    '</svg>';
+        return el
 
     }
 
@@ -374,9 +349,40 @@ var circularSlider = (function() {
         extendObj,
         createEl,
         degToCSS,
+        polarToCartesian,
+        getArc,
         on,
         off,
         debug
+
+    // convert polar (r,θ) to cartesian (x,y) coordinates
+    polarToCartesian =function(centerX, centerY, radius, angleInDegrees) {
+        var angleInRadians = (angleInDegrees-90) * Math.PI / 180.0;
+        return {
+            x: centerX + (radius * Math.cos(angleInRadians)),
+            y: centerY + (radius * Math.sin(angleInRadians))
+        };
+    }
+
+    // generate svg arc description string from passedin attributes: start xy, start angle, end angle
+    getArc = function(x, y, startAngle, endAngle) {
+
+        var radius = parseInt(options.radius, 10),
+            cx = parseInt(options.offset.x, 10),
+            cy = parseInt(options.offset.y, 10)
+
+        var start = polarToCartesian(x, y, radius, endAngle);
+        var end = polarToCartesian(x, y, radius, startAngle);
+
+        var largeArcFlag = endAngle - startAngle <= 180 ? '0' : '1';
+
+        var d = [
+            'M', start.x, start.y,
+            'A', radius, radius, 0, largeArcFlag, 0, end.x, end.y
+        ].join(' ');
+
+        return d;
+    }
 
     // convert degrees to CSS rotation
     degToCSS = function(degree) {
@@ -432,7 +438,14 @@ var circularSlider = (function() {
 
         // loop through childs and return
         for (i in elems) {
-            if ((' '+ elems[i].className +' ').indexOf(' '+ _class +' ') > -1) return elems[i]
+            // search for SVG nodes
+            if (elems[i].className && elems[i].className.animVal && (' '+elems[i].className.animVal+' ').indexOf(' '+_class+' ')!=-1) {
+                return elems[i]
+            }
+            // search for HTML nodes
+            else if ((' '+ elems[i].className +' ').indexOf(' '+_class+' ') > -1) {
+                return elems[i]
+            }
         }
     }
 

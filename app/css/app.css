@@ -138,51 +138,30 @@ h1, h2, h3, h4, h5, h6{
 
 
 /* scale */
-.circular-slider .scale {
+.circular-slider .scale_wrap {
     position:absolute;
     top:0;
     left:0;
-    opacity:0.5;
-    background-color:#fff;
-    width:100px;
-    height:100px;
-    border-radius:50%;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    pointer-events: none;
+    /*background: rgba(255,0,0,0.5);*/
 }
-.circular-slider .scale .clip1 {
+.circular-slider svg.scale {
     position:absolute;
     top:0;
     left:0;
-    width:100px;
-    height:100px;
-    clip:rect(0px, 100px, 100px, 50px);
+    z-index: 1;
+    width:100%;
+    height:100%;
+    /*background: rgba(255,0,0,0.5);*/
+    /*border-radius:50%;*/
 }
-.circular-slider .scale .slice1 {
-    position:absolute;
-    width:100px;
-    height:100px;
-    clip:rect(0px, 50px, 100px, 0px);
-    border-radius:50%;
-    background-color:#d73a3a;
-    border-color:#d73a3a;
-    transform:rotate(0);
-}
-.circular-slider .scale .clip2 {
-    position:absolute;
-    top:0;
-    left:0;
-    width:100px;
-    height:100px;
-    clip:rect(0, 50px, 100px, 0px);
-}
-.circular-slider .scale .slice2 {
-    position:absolute;
-    width:100px;
-    height:100px;
-    clip:rect(0px, 100px, 100px, 50px);
-    border-radius:50%;
-    background-color:#d73a3a;
-    border-color:#d73a3a;
-    transform:rotate(0);
+.circular-slider svg.scale path {
+    fill: none;
+    stroke: #446688;
+    stroke-width: 10px;
 }
 
 
