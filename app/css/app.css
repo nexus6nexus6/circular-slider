@@ -60,6 +60,13 @@ h1, h2, h3, h4, h5, h6{
     background-color:rgba(0, 0, 255, 0.1);
     padding: 10px;
     box-sizing: border-box;
+    line-height: 150%;
+}
+.UIRoot .labels hr {
+    border:none;
+    width: 100%;
+    height: 1px;
+    background: black;
 }
 
 
@@ -125,7 +132,7 @@ h1, h2, h3, h4, h5, h6{
     background: black;
     pointer-events: none;
 }
-.circular-slider .slider {
+.circular-slider .bg {
     position: absolute;
     top:0;
     left:0;

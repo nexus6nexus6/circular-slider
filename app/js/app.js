@@ -9,7 +9,8 @@ var circularSlider = (function() {
     // private props
     var options,
         sliderEl,
-        sliderValue
+        sliderValue,
+        track = false
 
     // private methods definition list
     var config,
@@ -37,14 +38,15 @@ var circularSlider = (function() {
         }
 
         // set default slider value
-        sliderValue = 0;
+        sliderValue = options.min;
 
         // setup default sliderEl object structure
         sliderEl = {
             container: null,
+            scale: null,
             origin: null,
             dragger: null,
-            slider: null,
+            bg: null,
             label: null
         };
 
@@ -52,7 +54,14 @@ var circularSlider = (function() {
 
     // overwrites default values and vars
     config = function(_options) {
-        if (_options) options = extendObj(options,_options)
+
+        if (_options) {
+            // extend default options object
+            options = extendObj(options,_options)
+            // set sliderValue to options.min
+            sliderValue = options.min
+        }
+
     }
 
     // renders DOM elements
@@ -71,14 +80,14 @@ var circularSlider = (function() {
             container: createEl('div', options.id),
             listener: createEl('div', 'listener'),
             origin: createEl('div', 'origin'),
-            slider: createEl('div', 'slider'),
+            bg: createEl('div', 'bg'),
             scale: createCircularScale(),
             dragger: createEl('div', 'dragger'),
             label: createEl('div', options.id)
         }
 
         // glue slider DOM elements to container el
-        sliderEl.origin.appendChild(sliderEl.slider)
+        sliderEl.origin.appendChild(sliderEl.bg)
         sliderEl.listener.appendChild(sliderEl.origin)
         sliderEl.container.appendChild(sliderEl.dragger)
         sliderEl.container.appendChild(sliderEl.scale)
@@ -102,23 +111,23 @@ var circularSlider = (function() {
         sliderEl.origin.style.left = (r+cy) + 'px';
 
         // position the slider (circle)
-        sliderEl.slider.style.top = -r + 'px';
-        sliderEl.slider.style.left = -r + 'px';
+        sliderEl.bg.style.top = -r + 'px';
+        sliderEl.bg.style.left = -r + 'px';
 
         // add radius to slider
-        sliderEl.slider.style.width = r * 2 + 'px';
-        sliderEl.slider.style.height = r * 2 + 'px';
+        sliderEl.bg.style.width = r * 2 + 'px';
+        sliderEl.bg.style.height = r * 2 + 'px';
 
-        // position the dragger
-        sliderEl.dragger.style.top = (0+cx) + 'px';
-        sliderEl.dragger.style.left = (r+cy) + 'px';
-
-
+        // position the dragger to options.min
+        setInitialDraggerPosition()
 
     }
 
     // updates DOM elements
-    update = function() {
+    update = function(e) {
+
+        // update dragger position
+        e && updateDragger(getXYFromEvent(e))
 
         // set scale angle value
         updateScale()
@@ -142,9 +151,8 @@ var circularSlider = (function() {
             container = sliderEl.container,
             listener = sliderEl.listener,
             origin = sliderEl.origin,
-            slider = sliderEl.slider,
-            label = sliderEl.label,
-            track = false
+            bg = sliderEl.bg,
+            label = sliderEl.label
 
         // register events
         on(dragger, 'mousedown', startTracking, false)
@@ -155,21 +163,6 @@ var circularSlider = (function() {
 
         on(listener, 'mousemove', trackPosition, false)
         on(dragger, 'touchmove', trackPosition, false)
-
-        function startTracking(e) {
-            track = true;
-            dragger.style.zIndex = '1'
-        }
-        function stopTracking(e) {
-            track = false;
-            dragger.style.zIndex = '2'
-        }
-        function trackPosition(e) {
-            if (!track) return
-            // console.log(e);
-            updateDragger(getXYFromEvent(e))
-        }
-
 
     }
 
@@ -185,37 +178,95 @@ var circularSlider = (function() {
         getTouchOffset,
         getXYFromEvent,
         createCircularScale,
-        rotateSlice
+        rotateSlice,
+        setInitialDraggerPosition,
+        startTracking,
+        stopTracking,
+        trackPosition
+
+    // start tracking mouse/touch position
+    startTracking = function(e) {
+        track = true;
+        sliderEl.dragger.style.zIndex = '1'
+    }
+
+    // stop tracking mouse/touch position
+    stopTracking = function(e) {
+        track = false;
+        sliderEl.dragger.style.zIndex = '2'
+    }
+
+    // if track==true, track mouse/touch position
+    trackPosition = function(e) {
+        if (!track || !e) return
+        update(e)  // update UI
+    }
+
+    // set initial dragger position at options.min
+    setInitialDraggerPosition = function() {
+
+        var r = parseInt(options.radius,10), // radius
+            min = options.min, // min value 0-1
+            max = options.max, // max value 0-1
+            cx = parseInt(options.offset.x,10), // offset x
+            cy = parseInt(options.offset.y,10) // offset y
+
+
+        // ** if options min set to 0,0 and exit
+        if (options.min <= 0 ) {
+            // position to the top of the scale circle
+            sliderEl.dragger.style.top = (0+cx) + 'px';
+            sliderEl.dragger.style.left = (r+cy) + 'px';
+            return;
+        }
+
+
+        // ** else get angle out of min value
+        var  p = polarToCartesian(cx+r, cy+r, r, (270-(options.min*360)))  // shift angle value by -90 (top circle start point)
+        // position to the top of the scale circle
+        sliderEl.dragger.style.top = p.x + 'px';
+        sliderEl.dragger.style.left = p.y + 'px';
+
+    }
 
     // update dragger location based on mouse/touch angle against origin
     updateDragger = function(point) {
-        var x = point.x,
-            y = point.y,
+        var v, // 0-1 value of the dragger position
+            x = point.x, // mouse/touch x position
+            y = point.y, // mouse/touch y position
             r = parseInt(options.radius,10), // radius
+            min = options.min, // min value 0-1
+            max = options.max, // max value 0-1
             cx = parseInt(options.offset.x,10), // offset x
             cy = parseInt(options.offset.y,10), // offset y
-            a = Math.atan2(y-cy, x-cx) // angle
+            a = Math.atan2(y-cy, x-cx) // get origin angle out of mouse/touch:x,y
 
-        // offset xy
+
+        console.log(a);
+
+        // point position + offset xy
         var nx = r + r * Math.cos(a)
         var ny = r + r * Math.sin(a)
 
+        // normalize to 0-1 value
+        v = a * (0.5/Math.PI) + (a > 0 ? 0 : 1);
+        // shift by -90deg, so we can start on the top of the circle
+        v = (v + 0.25) % 1;
+
+        console.log(v);
+
         // update dragger position
-        sliderEl.dragger.style.left = nx + cx + 'px'
-        sliderEl.dragger.style.top = ny + cy + 'px'
-
-        // convert angle in radian to degrees + make it full 360 from -180/180
-        a = a * (180/Math.PI) + (a > 0 ? 0 : 360)
-
-        // shift 0° by -90°
-        a = (a + 90) % 360
-
-
-        // pass angle as a sliderValue
-        sliderValue = a
-
-        // update dragger label
-        update()
+        if (min < v && v < max) {
+            // pass angle as a sliderValue
+            sliderValue = v;
+            // update dragger position
+            sliderEl.dragger.style.left = nx + cx + 'px';
+            sliderEl.dragger.style.top = ny + cy + 'px';
+        }
+        else {
+            // stop tracking mouse/touch events
+            // stopTracking();
+        }
 
     }
 
@@ -228,7 +279,7 @@ var circularSlider = (function() {
             arc = childByClass(sliderEl.container,'arc');
 
         // get arc svg string: (start xy, start_angle, end_angle)
-        arc.setAttribute('d',getArc((r+cx), (r+cy), 0, sliderValue))
+        arc.setAttribute('d',getArc((r+cx), (r+cy), options.min, sliderValue)) // sliderValue 0-1
 
     }
 
@@ -261,7 +312,13 @@ var circularSlider = (function() {
 
     // update slider label value
     updateLabel = function() {
-        sliderEl.label.innerText = sliderValue.toFixed(2)+'°' || '';
+        // update slider label
+        sliderEl.label.innerHTML = '<hr><b>value:</b> '+ sliderValue.toFixed(2) || '';
+        // update info label
+        var info = getByClass('.info')
+        info.innerHTML = '<b>min:</b> '+ options.min.toFixed(2) +'<br>'+
+                         '<b>max:</b> '+ options.max.toFixed(2) +'<br>'+
+                         '<b>radius:</b> '+ options.radius
     }
 
     // sum up all offsets up the DOM tree for touch event
@@ -311,15 +368,9 @@ var circularSlider = (function() {
             point.y = e.touches[0].pageY - offset.y
         }
 
-        // normalize
+        // offset xy point
         point.x -= r
         point.y -= r
-
-        // cap min, max values
-        // if (point.x < 0) point.x = 0;
-        // if (point.x > sliderEl.slider.offsetWidth) point.x = sliderEl.slider.offsetWidth;
-        // if (point.y < 0) point.y = 0;
-        // if (point.y > sliderEl.slider.offsetHeight) point.y = sliderEl.slider.offsetHeight;
 
         return point
     }
@@ -369,12 +420,14 @@ var circularSlider = (function() {
 
         var radius = parseInt(options.radius, 10),
             cx = parseInt(options.offset.x, 10),
-            cy = parseInt(options.offset.y, 10)
+            cy = parseInt(options.offset.y, 10),
+            sa = startAngle * 360,
+            ea = endAngle * 360
 
-        var start = polarToCartesian(x, y, radius, endAngle);
-        var end = polarToCartesian(x, y, radius, startAngle);
+        var start = polarToCartesian(x, y, radius, ea);
+        var end = polarToCartesian(x, y, radius, sa);
 
-        var largeArcFlag = endAngle - startAngle <= 180 ? '0' : '1';
+        var largeArcFlag = ea - sa <= 180 ? '0' : '1';
 
         var d = [
             'M', start.x, start.y,
@@ -509,8 +562,8 @@ var circularSlider = (function() {
 circularSlider.init({
     id: 'slider-1',
     color: 'rgba(255,0,0,0.1)',
-    max: 1,
-    min: 0,
+    min: 0.1,
+    max: 0.6,
     step: 0.01,
     radius: '80px',
     offset: {
