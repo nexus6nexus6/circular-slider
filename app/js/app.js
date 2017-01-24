@@ -164,6 +164,8 @@ var circularSlider = (function() {
         on(listener, 'mousemove', trackPosition, false)
         on(dragger, 'touchmove', trackPosition, false)
 
+        on(listener, 'mousedown', changePosition, false)
+
     }
 
 
@@ -183,6 +185,7 @@ var circularSlider = (function() {
         startTracking,
         stopTracking,
         trackPosition,
+        changePosition,
         parseOptions
 
     // start tracking mouse/touch position
@@ -200,6 +203,11 @@ var circularSlider = (function() {
     // if track==true, track mouse/touch position
     trackPosition = function(e) {
         if (!track || !e) return
+        update(e)  // update UI
+    }
+
+    // change dragger position & sliderValue based on track mouse/touch event
+    changePosition = function(e) {
         update(e)  // update UI
     }
 
@@ -599,7 +607,7 @@ circularSlider.init({
     color: 'rgba(0,255,0,0.3)',
     min: 0.1,
     max: 0.6,
-    step: 0.1,
+    step: 0.05,
     radius: '80px',
     offset: {
         x: '36px',
