@@ -113,10 +113,12 @@ var circularSlider = (function() {
         sliderEl.origin.style.left = (r+cy) + 'px';
 
         // position the slider bg
-        sliderEl.bg.style.top = -r + 'px';
-        sliderEl.bg.style.left = -r + 'px';
-        sliderEl.bg.style.width = r*2 + 'px';
-        sliderEl.bg.style.height = r*2 + 'px';
+        var t = 10; // slider thickness
+        sliderEl.bg.style.top = -r-(t/2) + 'px';
+        sliderEl.bg.style.left = -r-(t/2) + 'px';
+        sliderEl.bg.style.width = r*2+t + 'px';
+        sliderEl.bg.style.height = r*2+t + 'px';
+        sliderEl.bg.style.borderColor = options.color;
 
         // position the dragger to default position
         setInitialDraggerPosition()
@@ -377,7 +379,7 @@ var circularSlider = (function() {
             r = options.radius_,        // slider radius
             cx = options.offset.x_,     // slider offset
             cy = options.offset.y_,     // slider offset
-            t = 3,                      // thickness of the dashed bg,
+            t = 10,                      // thickness of the dashed bg,
             step = options.step,        // slider step between 0..1
             svg                         // svg string
 
@@ -385,8 +387,8 @@ var circularSlider = (function() {
         '<svg xmlns="http://www.w3.org/2000/svg" class="scale">'+
             '<path class="arc" />'+                                     // sliderValue arc
             '<defs>'+                                                   // dashed slider scale bg
-                '<g id="lines" style="stroke: black; stroke-width:1px;">'+
-                    '<line y1="-'+ (r-t) +'" y2="-'+ r +'" />'+
+                '<g id="lines-'+ options.id+'" class="lines">'+
+                    '<line y1="-'+ (r-t/2) +'" y2="-'+ (r+t/2) +'" />'+
                 '</g>'+
             '</defs>'+
             '<g transform="translate('+ (cx+r) +' '+ (cy+r) +')">'
@@ -398,7 +400,7 @@ var circularSlider = (function() {
 
         // build svg transfromations
         for (var i=0; i <= steps; i++) {
-            svg += '<use xlink:href="#lines" transform="rotate('+ (i * a * 360) +')"/>'
+            svg += '<use xlink:href="#lines-'+options.id+'" transform="rotate('+ (i * a * 360) +')"/>'
         }
 
         svg += ''+
@@ -594,7 +596,7 @@ var circularSlider = (function() {
 
 circularSlider.init({
     id: 'slider-1',
-    color: 'rgba(255,0,0,0.1)',
+    color: 'rgba(0,255,0,0.3)',
     min: 0.1,
     max: 0.6,
     step: 0.1,
