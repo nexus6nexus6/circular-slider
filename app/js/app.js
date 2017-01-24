@@ -1,18 +1,22 @@
 'use strict';
 
-// **
-// App: Circular silder module
+/*
+* Circular silder module
+* author: grega@webshocker.net
+*/
+
 var circularSlider = (function() {
 
-    // ** CORE METHODS and PROPS
 
-    // private props
-    var options,
-        sliderEl,
-        sliderValue,
-        track = false
+    // ** CORE
 
-    // private methods definition list
+    // private core vars and objects
+    var options,            // configuration object
+        sliderEl,           // slider DOM nodes
+        sliderValue,        // slider output
+        track = false       // slider locking mechanism
+
+    // private core methods
     var config,
         render,
         control,
@@ -20,7 +24,7 @@ var circularSlider = (function() {
         update,
         events
 
-    // configures default values and vars
+    // configures default values
     defaults = function() {
 
         // set default options
@@ -40,7 +44,7 @@ var circularSlider = (function() {
         // set default slider value
         sliderValue = options.min;
 
-        // setup default sliderEl object structure
+        // set default sliderEl object values
         sliderEl = {
             container: null,
             scale: null,
@@ -52,7 +56,7 @@ var circularSlider = (function() {
 
     }
 
-    // overwrites default values and vars
+    // overwrites default values
     config = function(_options) {
 
         if (_options) {
@@ -64,18 +68,14 @@ var circularSlider = (function() {
 
     }
 
-    // renders DOM elements
+    // renders slider DOM nodes
     render = function() {
 
-        // ** render slider elements
-        // append app elements to options.container child > .slider
-
-        // get container elements
+        // get container nodes
         var sliders = getByClass('.sliders')
         var labels = getByClass('.labels')
 
-        // ** create slider DOM elements
-        // attach them to shared sliderEl object for future reference
+        // create slider DOM nodes,  attach them to shared sliderEl
         sliderEl = {
             container: createEl('div', options.id),
             listener: createEl('div', 'listener'),
@@ -86,22 +86,21 @@ var circularSlider = (function() {
             label: createEl('div', options.id)
         }
 
-        // glue slider DOM elements to container el
+        // glue slider DOM nodes and append them to container
         sliderEl.origin.appendChild(sliderEl.bg)
         sliderEl.listener.appendChild(sliderEl.origin)
         sliderEl.container.appendChild(sliderEl.dragger)
         sliderEl.container.appendChild(sliderEl.scale)
         sliderEl.container.appendChild(sliderEl.listener)
 
-        // append two main elements to DOM parents
+        // append two main elements to conatiner nodes
         sliders.appendChild(sliderEl.container)
         labels.appendChild(sliderEl.label)
 
-        // append class namespace
+        // set sliders class namespace
         sliderEl.container.className += ' circular-slider'
 
-        // ** position the elements
-        // setup some data first
+        // position and style slider nodes
         var r = parseInt(options.radius, 10),
             cx = parseInt(options.offset.x, 10),
             cy = parseInt(options.offset.y, 10)
@@ -110,20 +109,18 @@ var circularSlider = (function() {
         sliderEl.origin.style.top = (r+cx) + 'px';
         sliderEl.origin.style.left = (r+cy) + 'px';
 
-        // position the slider (circle)
+        // position the slider bg
         sliderEl.bg.style.top = -r + 'px';
         sliderEl.bg.style.left = -r + 'px';
+        sliderEl.bg.style.width = r*2 + 'px';
+        sliderEl.bg.style.height = r*2 + 'px';
 
-        // add radius to slider
-        sliderEl.bg.style.width = r * 2 + 'px';
-        sliderEl.bg.style.height = r * 2 + 'px';
-
-        // position the dragger to options.min
+        // position the dragger to default position
         setInitialDraggerPosition()
 
     }
 
-    // updates DOM elements
+    // updates DOM nodes
     update = function(e) {
 
         // update dragger position
@@ -140,13 +137,12 @@ var circularSlider = (function() {
     // handle events
     events = function() {
 
-        // prevent iPad document move
+        // prevent iPad document move on touchmove
         document.ontouchmove = function(e) {
             e.preventDefault();
         }
 
-
-        // shorthand nodes
+        // shorthand slider nodes
         var dragger = sliderEl.dragger,
             container = sliderEl.container,
             listener = sliderEl.listener,
@@ -154,7 +150,7 @@ var circularSlider = (function() {
             bg = sliderEl.bg,
             label = sliderEl.label
 
-        // register events
+        // register DOM event handlers
         on(dragger, 'mousedown', startTracking, false)
         on(dragger, 'touchstart', startTracking, false)
 
@@ -171,7 +167,7 @@ var circularSlider = (function() {
 
 
 
-    // ** SHARED LIB - shared by core methods
+    // ** SHARED methods
     var updateLabel,
         updateScale,
         updateDragger,
@@ -241,9 +237,6 @@ var circularSlider = (function() {
             cy = parseInt(options.offset.y,10), // offset y
             a = Math.atan2(y-cy, x-cx) // get origin angle out of mouse/touch:x,y
 
-
-        console.log(a);
-
         // point position + offset xy
         var nx = r + r * Math.cos(a)
         var ny = r + r * Math.sin(a)
@@ -252,8 +245,6 @@ var circularSlider = (function() {
         v = a * (0.5/Math.PI) + (a > 0 ? 0 : 1);
         // shift by -90deg, so we can start on the top of the circle
         v = (v + 0.25) % 1;
-
-        console.log(v);
 
         // update dragger position
         if (min < v && v < max) {
@@ -392,8 +383,7 @@ var circularSlider = (function() {
 
 
 
-    // ** FACADE - abstracts DOM related methods for vanilla JS
-    // methods deifnition list
+    // ** UTILITY methods
     var getById,
         getByClass,
         childByClass,
@@ -551,8 +541,9 @@ var circularSlider = (function() {
             // listen to DOM and app events
             events()
 
+            // TODO  destroy()
+
         }
-        // TODO  destroy()
     }
 
 
