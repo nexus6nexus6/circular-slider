@@ -10,13 +10,15 @@ var circularSlider = (function() {
 
     // ** CORE
 
-    // private core vars and objects
+    // core vars and objects
     var options,            // configuration object
         sliderEl,           // slider DOM nodes
-        sliderValue,        // slider output
+        sliderValue,         // slider output
         track = false       // slider locking mechanism
 
-    // private core methods
+
+
+    // core methods
     var config,
         render,
         control,
@@ -27,8 +29,8 @@ var circularSlider = (function() {
     // configures default values
     defaults = function() {
 
-        // set default options
-        options = {
+        // set default options and parse 'px' values into numbers
+        options = parseOptions({
             id: 'slider',
             color: 'red',
             max: 1,
@@ -39,7 +41,8 @@ var circularSlider = (function() {
                 x: '0px',
                 y: '0px'
             }
-        }
+        })
+
 
         // set default slider value
         sliderValue = options.min;
@@ -60,8 +63,8 @@ var circularSlider = (function() {
     config = function(_options) {
 
         if (_options) {
-            // extend default options object
-            options = extendObj(options,_options)
+            // extend default options object and parse 'px' values into numbers
+            options = parseOptions(extendObj(options,_options))
             // set sliderValue to options.min
             sliderValue = options.min
         }
@@ -101,9 +104,9 @@ var circularSlider = (function() {
         sliderEl.container.className += ' circular-slider'
 
         // position and style slider nodes
-        var r = parseInt(options.radius, 10),
-            cx = parseInt(options.offset.x, 10),
-            cy = parseInt(options.offset.y, 10)
+        var r = options.radius_,
+            cx = options.offset.x_,
+            cy = options.offset.y_
 
         // position the origin
         sliderEl.origin.style.top = (r+cx) + 'px';
@@ -178,7 +181,8 @@ var circularSlider = (function() {
         setInitialDraggerPosition,
         startTracking,
         stopTracking,
-        trackPosition
+        trackPosition,
+        parseOptions
 
     // start tracking mouse/touch position
     startTracking = function(e) {
@@ -201,11 +205,11 @@ var circularSlider = (function() {
     // set initial dragger position at options.min
     setInitialDraggerPosition = function() {
 
-        var r = parseInt(options.radius,10), // radius
+        var r = options.radius_, // radius
             min = options.min, // min value 0-1
             max = options.max, // max value 0-1
-            cx = parseInt(options.offset.x,10), // offset x
-            cy = parseInt(options.offset.y,10) // offset y
+            cx = options.offset.x_, // offset x
+            cy = options.offset.y_ // offset y
 
 
         // ** if options min set to 0,0 and exit
@@ -230,11 +234,11 @@ var circularSlider = (function() {
         var v, // 0-1 value of the dragger position
             x = point.x, // mouse/touch x position
             y = point.y, // mouse/touch y position
-            r = parseInt(options.radius,10), // radius
+            r = options.radius_, // radius
             min = options.min, // min value 0-1
             max = options.max, // max value 0-1
-            cx = parseInt(options.offset.x,10), // offset x
-            cy = parseInt(options.offset.y,10), // offset y
+            cx = options.offset.x_, // offset x
+            cy = options.offset.y_, // offset y
             a = Math.atan2(y-cy, x-cx) // get origin angle out of mouse/touch:x,y
 
         // point position + offset xy
@@ -264,9 +268,9 @@ var circularSlider = (function() {
     // update circular scale
     updateScale = function() {
 
-        var r = parseInt(options.radius, 10),
-            cx = parseInt(options.offset.x, 10),
-            cy = parseInt(options.offset.y, 10),
+        var r = options.radius_,
+            cx = options.offset.x_,
+            cy = options.offset.y_,
             arc = childByClass(sliderEl.container,'arc');
 
         // get arc svg string: (start xy, start_angle, end_angle)
@@ -339,7 +343,7 @@ var circularSlider = (function() {
     getXYFromEvent = function(e) {
         if (!e || e == null) return null;
 
-        var r = parseInt(options.radius, 10)
+        var r = options.radius_;
 
         var point = {
             x : 0,
@@ -379,6 +383,15 @@ var circularSlider = (function() {
 
     }
 
+    // parse known 'px' options values into numbers
+    parseOptions = function(o) {
+        if (o && o.radius) o.radius_ = parseInt(o.radius, 10)
+        if (o && o.offset && o.offset.x && o.offset.y) {
+            o.offset.x_ = parseInt(o.offset.x, 10)
+            o.offset.y_ = parseInt(o.offset.y, 10)
+        }
+        return o
+    }
 
 
 
@@ -408,9 +421,9 @@ var circularSlider = (function() {
     // generate svg arc description string from passedin attributes: start xy, start angle, end angle
     getArc = function(x, y, startAngle, endAngle) {
 
-        var radius = parseInt(options.radius, 10),
-            cx = parseInt(options.offset.x, 10),
-            cy = parseInt(options.offset.y, 10),
+        var radius = options.radius_,
+            cx = options.offset.x_,
+            cy = options.offset.y_,
             sa = startAngle * 360,
             ea = endAngle * 360
 
