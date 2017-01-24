@@ -180,7 +180,6 @@ var circularSlider = (function() {
         getTouchOffset,
         getXYFromEvent,
         createCircularScale,
-        rotateSlice,
         setInitialDraggerPosition,
         startTracking,
         stopTracking,
@@ -288,33 +287,6 @@ var circularSlider = (function() {
 
     }
 
-    // rotate circular scale's slices
-    rotateSlice = function(x, outOf, target) {
-
-        var firstHalfAngle = 180;
-        var secondHalfAngle = 0;
-
-        // caluclate the angle
-        var drawAngle = x / outOf * 360;
-
-        // calculate the angle to be displayed if each half
-        if (drawAngle <= 180) {
-            firstHalfAngle = drawAngle;
-        }
-        else {
-            secondHalfAngle = drawAngle - 180;
-        }
-
-        if (target == 'slice1') {
-            return degToCSS(firstHalfAngle)
-        }
-        else {
-            return degToCSS(secondHalfAngle)
-
-        }
-
-    }
-
     // update slider label value
     updateLabel = function() {
         // update slider label
@@ -349,7 +321,7 @@ var circularSlider = (function() {
 
     }
 
-    // get normalized x from mouse or touch event
+    // get normalized xy point from mouse/touch event
     getXYFromEvent = function(e) {
         if (!e || e == null) return null;
 
