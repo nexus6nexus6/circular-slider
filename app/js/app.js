@@ -185,7 +185,8 @@ var circularSlider = (function() {
         stopTracking,
         trackPosition,
         changePosition,
-        parseOptions
+        parseOptions,
+        getNearestStep
 
     // start tracking mouse/touch position
     startTracking = function(e) {
@@ -258,18 +259,32 @@ var circularSlider = (function() {
         // shift by -90deg, so we can start on the top of the circle
         v = (v + 0.25) % 1;
 
+        // jump to nearest step value
+        v = getNearestStep(v)
+
         // update dragger position
-        if (min < v && v < max) {
+        if (min <= v && v <= max) {
             // pass angle as a sliderValue
             sliderValue = v;
             // update dragger position
-            sliderEl.dragger.style.left = nx + cx + 'px';
-            sliderEl.dragger.style.top = ny + cy + 'px';
+            var point = polarToCartesian(cx+r, cy+r, r, v*360)
+            sliderEl.dragger.style.left = point.x + 'px';
+            sliderEl.dragger.style.top = point.y + 'px';
         }
         else {
             // stop tracking mouse/touch events
             // stopTracking();
         }
+
+    }
+
+    // get the nearest step value of the current sliderValue (angle)
+    getNearestStep = function(v) {
+
+        var step = options.step,
+            start = options.min
+
+        return  Math.round((v - start) / step ) * step + start;
 
     }
 
@@ -295,6 +310,7 @@ var circularSlider = (function() {
         var info = getByClass('.info')
         info.innerHTML = '<b>min:</b> '+ options.min.toFixed(2) +'<br>'+
                          '<b>max:</b> '+ options.max.toFixed(2) +'<br>'+
+                         '<b>step:</b> '+ options.step.toFixed(2) +'<br>'+
                          '<b>radius:</b> '+ options.radius
     }
 
