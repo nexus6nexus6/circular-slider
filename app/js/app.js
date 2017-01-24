@@ -118,7 +118,6 @@ var circularSlider = (function() {
         sliderEl.bg.style.left = -r-(t/2) + 'px';
         sliderEl.bg.style.width = r*2+t + 'px';
         sliderEl.bg.style.height = r*2+t + 'px';
-        sliderEl.bg.style.borderColor = options.color;
 
         // position the dragger to default position
         setInitialDraggerPosition()
@@ -195,7 +194,7 @@ var circularSlider = (function() {
     // stop tracking mouse/touch position
     stopTracking = function(e) {
         track = false;
-        sliderEl.dragger.style.zIndex = '2'
+        sliderEl.dragger.style.zIndex = '12'
     }
 
     // if track==true, track mouse/touch position
@@ -277,6 +276,7 @@ var circularSlider = (function() {
 
         // get arc svg string: (start xy, start_angle, end_angle)
         arc.setAttribute('d',getArc((r+cx), (r+cy), options.min, sliderValue)) // sliderValue 0-1
+        arc.setAttribute('style','stroke:'+options.color) // sliderValue 0-1
 
     }
 
