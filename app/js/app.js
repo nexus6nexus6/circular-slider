@@ -373,13 +373,42 @@ var circularSlider = (function() {
     // create scale: circular HTML element
     createCircularScale = function() {
 
-        var el = document.createElement('div')
-        el.setAttribute('class','scale_wrap')
-        el.innerHTML += ''+
-                    '<svg xmlns="http://www.w3.org/2000/svg" class="scale">'+
-                        '<path class="arc" />'+
-                    '</svg>';
-        return el
+        var el = createEl('div','scale_wrap'),
+            r = options.radius_,        // slider radius
+            cx = options.offset.x_,     // slider offset
+            cy = options.offset.y_,     // slider offset
+            t = 3,                      // thickness of the dashed bg,
+            step = options.step,        // slider step between 0..1
+            svg                         // svg string
+
+        svg = ''+
+        '<svg xmlns="http://www.w3.org/2000/svg" class="scale">'+
+            '<path class="arc" />'+                                     // sliderValue arc
+            '<defs>'+                                                   // dashed slider scale bg
+                '<g id="lines" style="stroke: black; stroke-width:1px;">'+
+                    '<line y1="-'+ (r-t) +'" y2="-'+ r +'" />'+
+                '</g>'+
+            '</defs>'+
+            '<g transform="translate('+ (cx+r) +' '+ (cy+r) +')">'
+
+        // transform dashes: get quater angles (0..90deg) out of step (0..1)
+        var steps = 1 / step;
+        // divide quater with steps to get tranform anglees
+        var a = 1 / steps;
+
+        // build svg transfromations
+        for (var i=0; i <= steps; i++) {
+            svg += '<use xlink:href="#lines" transform="rotate('+ (i * a * 360) +')"/>'
+        }
+
+        svg += ''+
+            '</g>'+
+        '</svg>';
+
+        // set node attrs and values
+        el.innerHTML = svg;
+
+        return el;
 
     }
 
@@ -568,7 +597,7 @@ circularSlider.init({
     color: 'rgba(255,0,0,0.1)',
     min: 0.1,
     max: 0.6,
-    step: 0.01,
+    step: 0.1,
     radius: '80px',
     offset: {
         x: '36px',
