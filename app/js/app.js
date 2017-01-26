@@ -14,7 +14,8 @@ var circularSlider = function() {
     var options,            // configuration object
         sliderEl,           // slider DOM nodes
         sliderValue,         // slider output
-        track = false       // slider locking mechanism
+        track = false,       // slider locking mechanism
+        t = 10              // border thickness
 
 
 
@@ -91,8 +92,8 @@ var circularSlider = function() {
         }
 
         // glue slider DOM nodes and append them to container
-        sliderEl.origin.appendChild(sliderEl.bg)
         sliderEl.slider.appendChild(sliderEl.origin)
+        sliderEl.slider.appendChild(sliderEl.bg)
         sliderEl.slider.appendChild(sliderEl.dragger)
         sliderEl.slider.appendChild(sliderEl.scale)
         sliderEl.slider.appendChild(sliderEl.listener)
@@ -110,13 +111,18 @@ var circularSlider = function() {
             cy = options.offset.y_
 
         // position the origin
+        sliderEl.scale.style.width = (r*2+t) + 'px';
+        sliderEl.scale.style.height = (r*2+t) + 'px';
+        sliderEl.scale.style.top = (cx-t/2) + 'px';
+        sliderEl.scale.style.left = (cy-t/2) + 'px';
+
+        // position the origin
         sliderEl.origin.style.top = (r+cx) + 'px';
         sliderEl.origin.style.left = (r+cy) + 'px';
 
         // position the slider bg
-        var t = 10; // slider thickness
-        sliderEl.bg.style.top = -r-(t/2) + 'px';
-        sliderEl.bg.style.left = -r-(t/2) + 'px';
+        sliderEl.bg.style.top = (cx)-(t/2) + 'px';
+        sliderEl.bg.style.left = (cx)-(t/2) + 'px';
         sliderEl.bg.style.width = r*2+t + 'px';
         sliderEl.bg.style.height = r*2+t + 'px';
 
@@ -155,7 +161,8 @@ var circularSlider = function() {
             listener = sliderEl.listener,
             origin = sliderEl.origin,
             bg = sliderEl.bg,
-            label = sliderEl.label
+            label = sliderEl.label,
+            scale = sliderEl.scale
 
         // register DOM event handlers
         on(dragger, 'mousedown', startTracking, false)
@@ -167,7 +174,7 @@ var circularSlider = function() {
         on(listener, 'mousemove', trackPosition, false)
         on(dragger, 'touchmove', trackPosition, false)
 
-        on(listener, 'mousedown', changePosition, false)
+        on(scale, 'mousedown', changePosition, false)
 
     }
 
@@ -191,11 +198,13 @@ var circularSlider = function() {
         parseOptions,
         getNearestStep
 
+
     // start tracking mouse/touch position
     startTracking = function(e) {
         track = true;
         sliderEl.slider.style.zIndex = 100 // set position of this slider to the high level to catch mouse events
         sliderEl.dragger.style.zIndex = 10 // swap position below .listener to catch mousemove on listener
+        sliderEl.listener.style.zIndex = 11 // swap position below .listener to catch mousemove on listener
     }
 
     // stop tracking mouse/touch position
@@ -203,6 +212,7 @@ var circularSlider = function() {
         track = false;
         sliderEl.slider.style.zIndex = 'auto' // return position of this slider to the default value to let other sliders catch events
         sliderEl.dragger.style.zIndex = 11 // swap position back to top x-index to catch mousedown on dragger
+        sliderEl.listener.style.zIndex = 9 // swap position below .listener to catch mousemove on listener
     }
 
     // if track==true, track mouse/touch position
@@ -302,7 +312,7 @@ var circularSlider = function() {
             arc = childByClass(sliderEl.slider,'arc');
 
         // get arc svg string: (start xy, start_angle, end_angle)
-        arc.setAttribute('d',getArc((r+cx), (r+cy), options.min, sliderValue)) // sliderValue 0-1
+        arc.setAttribute('d',getArc((r+t/2), (r+t/2), options.min, sliderValue)) // sliderValue 0-1
         arc.setAttribute('style','stroke:'+options.color) // sliderValue 0-1
 
     }
@@ -347,7 +357,9 @@ var circularSlider = function() {
     getXYFromEvent = function(e) {
         if (!e || e == null) return null;
 
-        var r = options.radius_;
+        var r = options.radius_,
+            cx = options.offset.x_,
+            cy = options.offset.y_
 
         var point = {
             x : 0,
@@ -371,6 +383,12 @@ var circularSlider = function() {
         point.x -= r
         point.y -= r
 
+        // different offset: clicked vs. dragged << because of different container
+        if (e.target.className != 'listener') {
+            point.x += e.target.parentNode.offsetLeft
+            point.y += e.target.parentNode.offsetTop
+        }
+
         return point
     }
 
@@ -381,7 +399,6 @@ var circularSlider = function() {
             r = options.radius_,        // slider radius
             cx = options.offset.x_,     // slider offset
             cy = options.offset.y_,     // slider offset
-            t = 10,                      // thickness of the dashed bg,
             step = options.step,        // slider step between 0..1
             svg                         // svg string
 
@@ -393,7 +410,7 @@ var circularSlider = function() {
                     '<line y1="-'+ (r-t/2) +'" y2="-'+ (r+t/2) +'" />'+
                 '</g>'+
             '</defs>'+
-            '<g transform="translate('+ (cx+r) +' '+ (cy+r) +')">'
+            '<g transform="translate('+ (r+t/2) +' '+ (r+t/2) +')">'
 
         // transform dashes: get quater angles (0..90deg) out of step (0..1)
         var steps = 1 / step;

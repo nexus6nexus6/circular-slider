@@ -104,12 +104,11 @@ h1, h2, h3, h4, h5, h6{
 /* slider */
 .circular-slider .listener {
     position: absolute;
-    left:0;
-    top:0;
-    z-index: 1;
+    top: 0;
+    left: 0;
+    z-index: 9;
     width: 100%;
     height: 100%;
-    /*background-color: rgba(0,0,255,0.1);*/
 }
 .circular-slider .dragger {
     position: absolute;
@@ -137,12 +136,13 @@ h1, h2, h3, h4, h5, h6{
     position: absolute;
     top:0;
     left:0;
-    z-index: 1;
+    z-index: 8;
     /*background:rgba(255,0,0,0.1);*/
     border: 10px solid rgba(0,0,0,0.1); /* light grey */
     box-sizing: border-box;
     border-radius: 50%;
     pointer-events: none;
+    /*cursor: pointer;*/
 }
 .circular-slider .lines {
     stroke: white;
@@ -157,9 +157,12 @@ h1, h2, h3, h4, h5, h6{
     left:0;
     width: 100%;
     height: 100%;
-    z-index: 9;
-    pointer-events: none;
+    z-index: 10;
+    /*pointer-events: none;*/
     /*background: rgba(255,0,0,0.5);*/
+    cursor: pointer;
+    border-radius: 50%;
+    overflow: hidden;
 }
 .circular-slider svg.scale {
     position:absolute;
