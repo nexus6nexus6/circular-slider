@@ -61,9 +61,9 @@ h1, h2, h3, h4, h5, h6{
     width: 100%;
     background-color:rgba(0, 0, 255, 0.1);
     line-height: 150%;
-    font-size: 1em
+    font-size: 1em;
 }
-.UIRoot .labels .info {
+.UIRoot .labels > div {
     display:inline-block;
     float:left;
     width: 100%;
@@ -90,6 +90,7 @@ h1, h2, h3, h4, h5, h6{
 }
 .UIRoot .sliders > div{
     position: absolute;
+    z-index: auto;
     top:10px;
     left:10px;
     width: calc(100% - 20px);

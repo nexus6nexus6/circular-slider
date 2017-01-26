@@ -5,7 +5,7 @@
 * author: grega@webshocker.net
 */
 
-var circularSlider = (function() {
+var circularSlider = function() {
 
 
     // ** CORE
@@ -150,7 +150,8 @@ var circularSlider = (function() {
         }
 
         // shorthand slider nodes
-        var dragger = sliderEl.dragger,
+        var slider = sliderEl.slider,
+            dragger = sliderEl.dragger,
             listener = sliderEl.listener,
             origin = sliderEl.origin,
             bg = sliderEl.bg,
@@ -193,12 +194,14 @@ var circularSlider = (function() {
     // start tracking mouse/touch position
     startTracking = function(e) {
         track = true;
+        sliderEl.slider.style.zIndex = 100 // set position of this slider to the high level to catch mouse events
         sliderEl.dragger.style.zIndex = 10 // swap position below .listener to catch mousemove on listener
     }
 
     // stop tracking mouse/touch position
     stopTracking = function(e) {
         track = false;
+        sliderEl.slider.style.zIndex = 'auto' // return position of this slider to the default value to let other sliders catch events
         sliderEl.dragger.style.zIndex = 11 // swap position back to top x-index to catch mousedown on dragger
     }
 
@@ -308,14 +311,9 @@ var circularSlider = (function() {
     updateLabel = function() {
         // update slider label
         var val = sliderValue.toFixed(2) || ''
-        var labels = getByClass('.labels')
-        var info = getByClass('.info')
-        if (!info) {
-            info = createEl('div','info')
-            labels.appendChild(info)
-        }
-        info.style.backgroundColor = options.color;
-        info.innerHTML = '<b>value:</b> '+ val +' | '+
+        var label = sliderEl.label
+        label.style.backgroundColor = options.color;
+        label.innerHTML = '<b>value:</b> '+ val +' | '+
                             '<b>min:</b> '+ options.min.toFixed(2) +'| '+
                             '<b>max:</b> '+ options.max.toFixed(2) +' | '+
                             '<b>step:</b> '+ options.step.toFixed(2) +' | '+
@@ -595,32 +593,54 @@ var circularSlider = (function() {
     }
 
 
-}())
+}
 
 
-circularSlider.init({
+
+// create & init 3 sliders globaly
+
+var slider_1 = new circularSlider()
+slider_1.init({
     container: document.getElementById('container'),
     id: 'slider-1',
-    color: 'rgba(0,205,0,1)',
-    min: 0.1,
-    max: 0.6,
-    step: 0.05,
+    color: 'rgba(0,125,125,1)',
+    min: 0.0,
+    max: 0.9,
+    step: 0.02,
     radius: '100px',
     offset: {
         x: '40px',
         y: '40px'
     }
 });
-// circularSlider.init({
-//     container: document.getElementById('container'),
-//     id: 'slider-2',
-//     color: 'rgba(0,0,255,0.3)',
-//     min: 0.0,
-//     max: 0.9,
-//     step: 0.1,
-//     radius: '50px',
-//     offset: {
-//         x: '30px',
-//         y: '30px'
-//     }
-// });
+
+var slider_2 = new circularSlider()
+slider_2.init({
+    container: document.getElementById('container'),
+    id: 'slider-2',
+    color: 'rgba(0,205,0,1)',
+    min: 0.1,
+    max: 0.6,
+    step: 0.05,
+    radius: '75px',
+    offset: {
+        x: '65px',
+        y: '65px'
+    }
+});
+
+
+var slider_3 = new circularSlider()
+slider_3.init({
+    container: document.getElementById('container'),
+    id: 'slider-3',
+    color: 'rgba(200,0,100,1)',
+    min: 0.0,
+    max: 0.9,
+    step: 0.1,
+    radius: '50px',
+    offset: {
+        x: '90px',
+        y: '90px'
+    }
+});
