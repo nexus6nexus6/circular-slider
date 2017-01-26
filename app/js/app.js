@@ -454,6 +454,10 @@ var circularSlider = function() {
     // generate svg arc description string from passedin attributes: start xy, start angle, end angle
     getArc = function(x, y, startAngle, endAngle) {
 
+        // graphic trick to show max value
+        if (endAngle == options.max) endAngle -= 0.001
+
+        // .. continue
         var radius = options.radius_,
             cx = options.offset.x_,
             cy = options.offset.y_,
@@ -605,12 +609,12 @@ slider_1.init({
     id: 'slider-1',
     color: 'rgba(0,125,125,1)',
     min: 0.0,
-    max: 0.9,
+    max: 1.0,
     step: 0.02,
-    radius: '100px',
+    radius: '110px',
     offset: {
-        x: '40px',
-        y: '40px'
+        x: '30px',
+        y: '30px'
     }
 });
 
@@ -622,10 +626,10 @@ slider_2.init({
     min: 0.1,
     max: 0.6,
     step: 0.05,
-    radius: '75px',
+    radius: '80px',
     offset: {
-        x: '65px',
-        y: '65px'
+        x: '60px',
+        y: '60px'
     }
 });
 
