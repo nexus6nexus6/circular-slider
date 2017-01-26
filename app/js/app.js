@@ -31,6 +31,7 @@ var circularSlider = (function() {
 
         // set default options and parse 'px' values into numbers
         options = parseOptions({
+            container: getById('#container'),
             id: 'slider',
             color: 'red',
             max: 1,
@@ -49,7 +50,7 @@ var circularSlider = (function() {
 
         // set default sliderEl object values
         sliderEl = {
-            container: null,
+            slider: null,
             scale: null,
             origin: null,
             dragger: null,
@@ -75,12 +76,12 @@ var circularSlider = (function() {
     render = function() {
 
         // get container nodes
-        var sliders = getByClass('.sliders')
+        var container = options.container;
         var labels = getByClass('.labels')
 
         // create slider DOM nodes,  attach them to shared sliderEl
         sliderEl = {
-            container: createEl('div', options.id),
+            slider: createEl('div', options.id),
             listener: createEl('div', 'listener'),
             origin: createEl('div', 'origin'),
             bg: createEl('div', 'bg'),
@@ -91,17 +92,17 @@ var circularSlider = (function() {
 
         // glue slider DOM nodes and append them to container
         sliderEl.origin.appendChild(sliderEl.bg)
-        sliderEl.listener.appendChild(sliderEl.origin)
-        sliderEl.container.appendChild(sliderEl.dragger)
-        sliderEl.container.appendChild(sliderEl.scale)
-        sliderEl.container.appendChild(sliderEl.listener)
+        sliderEl.slider.appendChild(sliderEl.origin)
+        sliderEl.slider.appendChild(sliderEl.dragger)
+        sliderEl.slider.appendChild(sliderEl.scale)
+        sliderEl.slider.appendChild(sliderEl.listener)
 
         // append two main elements to conatiner nodes
-        sliders.appendChild(sliderEl.container)
+        container.appendChild(sliderEl.slider)
         labels.appendChild(sliderEl.label)
 
         // set sliders class namespace
-        sliderEl.container.className += ' circular-slider'
+        sliderEl.slider.className += ' circular-slider'
 
         // position and style slider nodes
         var r = options.radius_,
@@ -119,7 +120,9 @@ var circularSlider = (function() {
         sliderEl.bg.style.width = r*2+t + 'px';
         sliderEl.bg.style.height = r*2+t + 'px';
 
-        // position the dragger to default position
+        // style & position the dragger to default position
+        sliderEl.dragger.style.backgroundColor = options.color
+        sliderEl.dragger.style.boxShadow = '0 0 3px rgba(0,0,0,0.4)'
         setInitialDraggerPosition()
 
     }
@@ -148,7 +151,6 @@ var circularSlider = (function() {
 
         // shorthand slider nodes
         var dragger = sliderEl.dragger,
-            container = sliderEl.container,
             listener = sliderEl.listener,
             origin = sliderEl.origin,
             bg = sliderEl.bg,
@@ -191,13 +193,13 @@ var circularSlider = (function() {
     // start tracking mouse/touch position
     startTracking = function(e) {
         track = true;
-        sliderEl.dragger.style.zIndex = '1'
+        sliderEl.dragger.style.zIndex = 10 // swap position below .listener to catch mousemove on listener
     }
 
     // stop tracking mouse/touch position
     stopTracking = function(e) {
         track = false;
-        sliderEl.dragger.style.zIndex = '12'
+        sliderEl.dragger.style.zIndex = 11 // swap position back to top x-index to catch mousedown on dragger
     }
 
     // if track==true, track mouse/touch position
@@ -294,7 +296,7 @@ var circularSlider = (function() {
         var r = options.radius_,
             cx = options.offset.x_,
             cy = options.offset.y_,
-            arc = childByClass(sliderEl.container,'arc');
+            arc = childByClass(sliderEl.slider,'arc');
 
         // get arc svg string: (start xy, start_angle, end_angle)
         arc.setAttribute('d',getArc((r+cx), (r+cy), options.min, sliderValue)) // sliderValue 0-1
@@ -305,13 +307,19 @@ var circularSlider = (function() {
     // update slider label value
     updateLabel = function() {
         // update slider label
-        sliderEl.label.innerHTML = '<hr><b>value:</b> '+ sliderValue.toFixed(2) || '';
-        // update info label
+        var val = sliderValue.toFixed(2) || ''
+        var labels = getByClass('.labels')
         var info = getByClass('.info')
-        info.innerHTML = '<b>min:</b> '+ options.min.toFixed(2) +'<br>'+
-                         '<b>max:</b> '+ options.max.toFixed(2) +'<br>'+
-                         '<b>step:</b> '+ options.step.toFixed(2) +'<br>'+
-                         '<b>radius:</b> '+ options.radius
+        if (!info) {
+            info = createEl('div','info')
+            labels.appendChild(info)
+        }
+        info.style.backgroundColor = options.color;
+        info.innerHTML = '<b>value:</b> '+ val +' | '+
+                            '<b>min:</b> '+ options.min.toFixed(2) +'| '+
+                            '<b>max:</b> '+ options.max.toFixed(2) +' | '+
+                            '<b>step:</b> '+ options.step.toFixed(2) +' | '+
+                            '<b>radius:</b> '+ options.radius
     }
 
     // sum up all offsets up the DOM tree for touch event
@@ -591,14 +599,28 @@ var circularSlider = (function() {
 
 
 circularSlider.init({
+    container: document.getElementById('container'),
     id: 'slider-1',
-    color: 'rgba(0,255,0,0.3)',
+    color: 'rgba(0,205,0,1)',
     min: 0.1,
     max: 0.6,
     step: 0.05,
-    radius: '80px',
+    radius: '100px',
     offset: {
-        x: '36px',
-        y: '36px'
+        x: '40px',
+        y: '40px'
     }
 });
+// circularSlider.init({
+//     container: document.getElementById('container'),
+//     id: 'slider-2',
+//     color: 'rgba(0,0,255,0.3)',
+//     min: 0.0,
+//     max: 0.9,
+//     step: 0.1,
+//     radius: '50px',
+//     offset: {
+//         x: '30px',
+//         y: '30px'
+//     }
+// });
