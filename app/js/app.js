@@ -5,7 +5,7 @@
 * author: grega@webshocker.net
 */
 
-var circularSlider = function() {
+var circularSlider = function(opt) {
 
 
     // ** CORE
@@ -20,12 +20,32 @@ var circularSlider = function() {
 
 
     // core methods
-    var config,
-        render,
-        control,
+    var initialize,
         defaults,
+        config,
+        render,
         update,
         events
+
+    // init, invoked at the bottom
+    initialize = function(options) {
+
+        // set default values
+        defaults()
+
+        // overwrite defaults
+        config(options)
+
+        // render slider elements
+        render()
+
+        // update UI with default values
+        update()
+
+        // listen to DOM and app events
+        events()
+
+    }
 
     // configures default values
     defaults = function() {
@@ -177,7 +197,6 @@ var circularSlider = function() {
         on(scale, 'mousedown', changePosition, false)
 
     }
-
 
 
 
@@ -589,39 +608,18 @@ var circularSlider = function() {
 
 
 
-    // ** API - public interface
-    return {
-        init: function(options) {
+    // ** START things off
+    initialize(opt)
 
-            // set default values
-            defaults()
-
-            // overwrite defaults
-            config(options)
-
-            // render slider elements
-            render()
-
-            // update UI with default values
-            update()
-
-            // listen to DOM and app events
-            events()
-
-            // TODO  destroy()
-
-        }
-    }
 
 
 }
 
 
 
-// create & init 3 sliders globaly
+// construct  3 sliders globaly
 
-var slider_1 = new circularSlider()
-slider_1.init({
+var slider_1 = new circularSlider({
     container: document.getElementById('container'),
     id: 'slider-1',
     color: 'rgba(0,125,125,1)',
@@ -633,10 +631,9 @@ slider_1.init({
         x: '30px',
         y: '30px'
     }
-});
+})
 
-var slider_2 = new circularSlider()
-slider_2.init({
+var slider_2 = new circularSlider({
     container: document.getElementById('container'),
     id: 'slider-2',
     color: 'rgba(0,205,0,1)',
@@ -648,11 +645,10 @@ slider_2.init({
         x: '60px',
         y: '60px'
     }
-});
+})
 
 
-var slider_3 = new circularSlider()
-slider_3.init({
+var slider_3 = new circularSlider({
     container: document.getElementById('container'),
     id: 'slider-3',
     color: 'rgba(200,0,100,1)',
@@ -664,4 +660,4 @@ slider_3.init({
         x: '90px',
         y: '90px'
     }
-});
+})
